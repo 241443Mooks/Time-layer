@@ -71,6 +71,7 @@
   panel.addEventListener("toggle", () => { if (panel.open) load(); });
   window.addEventListener("time-layer-selection", event => {
     const next = event.detail && event.detail.view;
+    activeView = next;
     if (next !== "castlefield") {
       if (pending) pending.abort();
       panel.open = false;
@@ -79,6 +80,5 @@
       panel.hidden = false;
       if (panel.open) load();
     }
-    activeView = next;
   });
 })();
