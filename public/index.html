@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173a36">
+  <meta name="description" content="Explore Manchester then and now, with historical mapping across time.">
+  <title>Time-Layer · Manchester then & now</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#explore">Skip to maps</a>
+
+  <header class="masthead">
+    <div class="brand-row">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◷</span>
+        <span>TIME-LAYER <span class="brand-light">/ FIELD NOTES</span></span>
+      </div>
+      <a class="brand-link" href="https://github.com/241443Mooks/Time-layer" target="_blank" rel="noopener noreferrer">Source on GitHub ↗</a>
+    </div>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">A geographical curiosity experiment · 001</p>
+        <h1>Every street has<br><em>more than one story.</em></h1>
+        <p class="intro">Two views of the same place. One is Manchester today. The other is what contributors have mapped at a chosen point in history. Move through time and see what catches your eye.</p>
+      </div>
+      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.1</strong></div>
+    </div>
+  </header>
+
+  <main id="explore">
+    <section class="control-panel" aria-labelledby="where-heading">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow dark">01 / Choose a viewpoint</p>
+          <h2 id="where-heading">Where shall we look?</h2>
+        </div>
+        <p class="helper">These are places to explore, not verified historical events.</p>
+      </div>
+      <div class="view-list" id="view-list" role="group" aria-label="Manchester viewpoints">
+        <button type="button" class="view-option is-selected" data-view="centre" aria-pressed="true">City centre</button>
+        <button type="button" class="view-option" data-view="castlefield" aria-pressed="false">Castlefield</button>
+        <button type="button" class="view-option" data-view="ancoats" aria-pressed="false">Ancoats</button>
+        <button type="button" class="view-option" data-view="northern-quarter" aria-pressed="false">Northern Quarter</button>
+        <button type="button" class="view-option" data-view="piccadilly" aria-pressed="false">Piccadilly</button>
+      </div>
+    </section>
+
+    <section class="timeline-panel" aria-labelledby="time-heading">
+      <div class="panel-head time-head">
+        <div>
+          <p class="eyebrow dark">02 / Travel through time</p>
+          <h2 id="time-heading">Choose a year.</h2>
+        </div>
+        <div class="year-readout" aria-live="polite"><span>THE YEAR</span><strong id="year-output">1900</strong></div>
+      </div>
+      <label class="sr-only" for="year">Historical map year</label>
+      <input id="year" type="range" min="1600" max="2026" step="1" value="1900" aria-describedby="year-help">
+      <div class="range-ends"><span>1600</span><span>2026</span></div>
+      <div class="year-presets" role="group" aria-label="Jump to a year">
+        <button type="button" data-year="1800">1800</button>
+        <button type="button" data-year="1850">1850</button>
+        <button type="button" data-year="1900">1900</button>
+        <button type="button" data-year="1950">1950</button>
+        <button type="button" data-year="2000">2000</button>
+        <button type="button" data-year="2020">2020</button>
+      </div>
+      <p class="helper" id="year-help">Drag the slider, then release to change the historical map. Historical records may be incomplete or imprecise.</p>
+    </section>
+
+    <section class="map-section" aria-label="Compare maps">
+      <div class="map-head">
+        <div>
+          <p class="eyebrow dark">03 / Look closer</p>
+          <h2 id="place-title">Manchester city centre</h2>
+        </div>
+        <button type="button" id="share" class="share-button">Copy this view ↗</button>
+      </div>
+      <p id="place-hint" class="place-hint">Look for streets, boundaries and buildings that appear, disappear or change.</p>
+      <div class="maps">
+        <article class="map-card">
+          <div class="map-card-head"><span class="map-index">A / THEN</span><h3>Historical view <span id="map-year">1900</span></h3></div>
+          <div class="frame-wrap">
+            <iframe id="historical-map" title="OpenHistoricalMap historical view of Manchester city centre in 1900" src="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <div class="map-card-foot"><span>OpenHistoricalMap · date-filtered community records</span><a id="historical-link" href="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
+        </article>
+        <article class="map-card">
+          <div class="map-card-head"><span class="map-index">B / NOW</span><h3>Present-day view</h3></div>
+          <div class="frame-wrap">
+            <iframe id="modern-map" title="Present-day OpenStreetMap of Manchester city centre" src="https://www.openstreetmap.org/export/embed.html?bbox=-2.2566%2C53.4743%2C-2.2286%2C53.4873&amp;layer=mapnik" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <div class="map-card-foot"><span>© OpenStreetMap contributors · ODbL</span><a id="modern-link" href="https://www.openstreetmap.org/#map=14/53.4808/-2.2426" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
+        </article>
+      </div>
+      <p class="map-note" id="map-status" role="status">Choose a viewpoint to re-centre both maps. Their panning and zooming are independent in this first version.</p>
+    </section>
+
+    <section class="field-note" aria-labelledby="question-heading">
+      <div class="note-number">04 / THE EXPERIMENT</div>
+      <div><h2 id="question-heading">What changed?</h2><p>Try to spot one difference, then check the underlying historical records before treating it as fact. No detail shown—or missing—on a community map is proof by itself.</p></div>
+      <p class="test-question">Can someone discover and explain one surprising historical difference in two minutes?</p>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>Source and rights:</strong> <a href="https://www.openhistoricalmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenHistoricalMap</a> (generally CC0; individual feature exceptions) · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> (ODbL). Embedded maps retain their original providers' attribution and terms.</p>
+    <p>This is a curiosity prototype, not a historical authority or an endorsed map service. Map content and coverage depend on external hosts. <a href="https://github.com/241443Mooks/Open-license-radar" target="_blank" rel="noopener noreferrer">Open Licence Radar ↗</a></p>
+  </footer>
+</body>
+</html>
