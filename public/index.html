@@ -10,6 +10,7 @@
   <script src="./evidence.js" defer></script>
   <script src="./heritage.js" defer></script>
   <script src="./discovery.js" defer></script>
+  <script src="./shared-map.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -103,7 +104,18 @@
         <button type="button" id="map-mode-historical" class="map-mode is-active" aria-pressed="true" aria-controls="historical-pane">Past · reconstruction</button>
         <button type="button" id="map-mode-modern" class="map-mode" aria-pressed="false" aria-controls="modern-pane">Today</button>
       </div>
+      <div class="map-alignment-controls">
+        <label class="map-alignment-label" for="map-aligned-toggle">
+          <input type="checkbox" id="map-aligned-toggle">
+          <span><strong>Keep views aligned</strong> <span class="map-beta">BETA</span></span>
+        </label>
+        <span class="map-alignment-help" id="map-aligned-help">Uses one map camera to keep your position and zoom when flipping.</span>
+      </div>
       <div class="map-stage" id="map-stage">
+        <div id="shared-map-host" class="shared-map-host" hidden aria-label="Shared aligned historical and modern map">
+          <div id="shared-map" class="shared-map"></div>
+          <p id="shared-map-attribution" class="shared-map-attribution">© <a href="https://www.openhistoricalmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenHistoricalMap contributors</a> · © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a></p>
+        </div>
         <article class="map-pane is-visible" id="historical-pane" aria-label="Reconstructed historical map">
           <div class="map-pane-head"><span class="map-index">HISTORICAL RECONSTRUCTION</span><strong id="map-year">1900</strong></div>
           <div class="frame-wrap">
@@ -123,7 +135,7 @@
         <summary><span class="archive-peek-icon" aria-hidden="true">✦</span> Want an actual old map?</summary>
         <p>Our historical view is a reconstruction. Digitised maps are different: they show the cartography people actually drew. Explore <a href="https://maps.nls.uk/geo/explore/" target="_blank" rel="noopener noreferrer">NLS georeferenced maps ↗</a> (strong Great Britain coverage), or <a href="https://www.davidrumsey.com/view" target="_blank" rel="noopener noreferrer">David Rumsey’s historical map collection ↗</a> (international). Dates, rights and geographical availability vary; neither archive is yet embedded in this viewer.</p>
       </details>
-      <p class="map-note" id="map-status" role="status">Flip between past and present at this chosen location. These embedded maps do not yet synchronise if you drag either one.</p>
+      <p class="map-note" id="map-status" role="status">Flip between past and present. Turn on “Keep views aligned” to try one shared map camera; the original embed comparison remains available.</p>
     </section>
 
     <section id="discovery" class="discovery-section" aria-labelledby="discover-heading">
