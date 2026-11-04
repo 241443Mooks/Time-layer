@@ -6,7 +6,7 @@ A tiny, curiosity-led experiment: **look at the same part of Manchester today an
 
 ## Status
 
-**Live deployment (user-confirmed 4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The owner has explored the initial map and reported it interesting but somewhat clunky. The expanded year controls and new historical-evidence implementation committed on 4 November have not yet been independently browser-checked or confirmed deployed. This is an exploratory build, not a published historical reference. A year choice controls which records OpenHistoricalMap renders; it **does not** select a georeferenced scan of a map actually drawn in that year.
+**Live deployment (user-confirmed 4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The owner has explored the initial map and reported it interesting but somewhat clunky. The expanded year controls and new evidence-panel markup have now been observed on the deployed page, and the live `/api/evidence?view=centre` endpoint returned actual OHM records on 4 November 2026. The result hit the 150-record cap. Interactive panel behaviour on a real mobile/desktop browser, error states and historical interpretation still require hands-on testing. This is an exploratory build, not a published historical reference. A year choice controls which records OpenHistoricalMap renders; it **does not** select a georeferenced scan of a map actually drawn in that year.
 
 ## First experiment (deliberately small)
 
@@ -26,7 +26,7 @@ Start at Manchester city centre. Choose among five *viewpoints to investigate* (
 
 ### Version 0.2 — What do we know here?
 
-**Built in source, deployment not independently confirmed.** A collapsed-by-default **Historical evidence** section sits between the timeline controls and the maps, so the time-travel experience remains primary. On demand, the panel:
+**Deployed page and evidence endpoint confirmed 4 November 2026; interactive behaviour not fully validated.** A collapsed-by-default **Historical evidence** section sits between the timeline controls and the maps, so the time-travel experience remains primary. On demand, the panel:
 
 - Calls a same-origin **`GET /api/evidence?view=centre`** Worker endpoint, which performs a bounded, read-only query to [OpenHistoricalMap Overpass](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass). This avoids historical browser CORS difficulties; the public service may still time out or reject requests.
 - Queries a fixed ~1 km area around the **chosen Manchester preset**, not the part of either map that has been panned. Returns up to **150** dated or named historic map features. This is a **biased limited selection**, never a measure of all mapped features or completeness.
