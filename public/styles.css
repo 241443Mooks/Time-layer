@@ -152,3 +152,6 @@
  .discovery-summary{font-size:.87rem}
  .frame-wrap{height:360px}
 }
+.discovery-researched{display:block;color:#74552f;font-size:.73rem;font-weight:750;font-style:normal;margin:5px 0 3px}
+.discovery-lead-source{display:inline-block;font-size:.73rem;color:#346d57;margin:6px 8px 8px;text-decoration:underline;text-underline-offset:3px}
+
