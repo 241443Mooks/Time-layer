@@ -49,9 +49,11 @@
   function dateState(tags, year) {
     const start = parseExactYear(tags.start_date);
     const end = parseExactYear(tags.end_date);
-    if (start === null && end === null) return "unresolved";
     if (start !== null && year < start) return "before-start";
     if (end !== null && year > end) return "after-end";
+    // An end-only record cannot establish that the feature had begun
+    // by the chosen year (particularly important for BCE views).
+    if (start === null || (tags.end_date && end === null)) return "unresolved";
     return "compatible";
   }
 
