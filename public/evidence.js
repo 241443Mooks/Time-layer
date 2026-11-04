@@ -62,6 +62,18 @@
     return name ? String(name).slice(0, 100) : "Unnamed mapped feature";
   }
 
+  function featureType(tags) {
+    const fields = [
+      ["historic", "Historic"], ["building", "Building"], ["amenity", "Amenity"],
+      ["place", "Place"], ["railway", "Railway"], ["waterway", "Waterway"],
+      ["landuse", "Land use"], ["natural", "Natural"], ["boundary", "Boundary"],
+      ["highway", "Road"], ["shop", "Shop"], ["tourism", "Tourism"]
+    ];
+    const match = fields.find(([key]) => typeof tags[key] === "string" && tags[key]);
+    if (!match) return "Type not recorded in this sample";
+    return match[1] + ": " + String(tags[match[0]]).replaceAll("_", " ").slice(0, 90);
+  }
+
   function recordUrl(record) {
     return "https://www.openhistoricalmap.org/" + record.type + "/" + record.id;
   }
@@ -131,6 +143,7 @@
     };
     heading.appendChild(make("span", "evidence-state state-" + state, wording[state]));
     item.appendChild(heading);
+    item.appendChild(make("p", "evidence-feature-type", featureType(record.tags)));
     item.appendChild(make("p", "evidence-feature-dates", rawDates(record.tags)));
     const cited = record.tags.source;
     if (cited) item.appendChild(make("p", "evidence-feature-source", "Source tag: " + String(cited).slice(0, 190)));
