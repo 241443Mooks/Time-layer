@@ -6,13 +6,13 @@ A small, source-led time traveller's atlas: **choose a place, choose a year, com
 
 ## Status
 
-**Live deployment (4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The new destination-first HTML and the Wikimedia-backed place search, place profile, place-specific OHM evidence and Castlefield's curated Mamucium research lead were all observed via the live service. Focused mocked interaction checks passed search → select Castlefield → choose 79 CE → follow Mamucium → retain the year and breadcrumb trail. **Real-device mobile usability and full browser interaction have not yet been independently verified.** This remains an exploratory build, not a historical authority. The date-filtered OHM map is a reconstruction, **not** a scanned map originally drawn in that year.
+**Live deployment (4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The new destination-first HTML and the Wikimedia-backed place search, place profile, place-specific OHM evidence and Castlefield's curated Mamucium research lead were all observed via the live service. Focused mocked interaction checks passed search → select Castlefield → choose 79 CE → follow Mamucium → retain the year and breadcrumb trail. **The v0.4 Past/Today control is visible on the deployed page and its state transitions passed a focused mocked interaction test. Real-device mobile usability and full browser interaction have not yet been independently verified.** This remains an exploratory build, not a historical authority. The date-filtered OHM map is a reconstruction, **not** a scanned map originally drawn in that year.
 
 ## Current experience — place first, time second
 
 1. Search for a place **worldwide** using Wikidata, select an item with usable coordinates, or try Castlefield and Manchester.
 2. Choose a year between approximately 4000 BCE and 2026 CE.
-3. Compare date-filtered OpenHistoricalMap and present-day OpenStreetMap, both centred on the selected location.
+3. Flip between a date-filtered OpenHistoricalMap reconstruction and present-day OpenStreetMap **in one viewport**, centred on the selected location. They do not remain aligned after independent dragging.
 4. Read Wikidata/Wikipedia general context, then explore an optional **linked-place discovery trail**. Followed places keep the same year; breadcrumb buttons take you back.
 5. Inspect the separate, collapsed **year-matched OHM evidence panel**; Castlefield also offers the official Historic England Scheduled Monuments pilot.
 
@@ -22,7 +22,7 @@ The five original Manchester viewpoint URLs, including `?view=centre&year=1678`,
 
 ### What the time-travel comparison does
 
-- Two independent, interactive map embeds side by side (stacked on phones).
+- One shared map viewport with an accessible **Past · reconstruction / Today** switch. Both embeds stay loaded but only one is visible at once. They still **do not synchronise** pan or zoom.
 - Official [OpenHistoricalMap embed](https://github.com/OpenHistoricalMap/openhistoricalmap-embed), filtered by selected year, and the official [OpenStreetMap embed](https://wiki.openstreetmap.org/wiki/Export) for present-day comparison.
 - Worldwide Wikidata place search and shareable `?place=Q…&year=…` links, four historical-period controls (4000 BCE–1 BCE, 1–999 CE, 1000–1599 CE, 1600–2026 CE), a year slider and optional collapsed date shortcuts. Previously shared Manchester-view URLs remain compatible.
 - BCE date formatting follows OpenHistoricalMap's astronomical year convention: `year=-999` in this site's URL shows **1000 BCE** and is passed as `date=-0999` to the embed; `year=0` means **1 BCE**, not an invented year zero. These are **date selections**, not claims of feature coverage.
@@ -51,12 +51,21 @@ The Worker accepts five old named presets or a validated Wikidata QID; coordinat
 - `GET /api/place-search?q=Castlefield`: explicit user-submitted search through [Wikidata's Action API](https://www.wikidata.org/wiki/Wikidata:Data_access); the site searches at most 16 candidate entities and displays up to seven with usable coordinates. There is **no autocomplete** or unbounded geocoding. Place labels and coordinates are CC0 Wikidata metadata.
 - `GET /api/place?id=Q2308772`: a Wikidata place profile, an English [Wikipedia REST summary](https://www.mediawiki.org/wiki/Wikimedia_REST_API) if available, and up to nine geographically nearby Wikipedia articles with Wikidata identifiers and coordinates. Nearby articles are not time-filtered and may refer to modern places. Sources and their reuse attribution are shown.
 - `GET /api/evidence?place=Q2308772&year=79`: a separate OHM historical query for the **selected place** rather than only the original five Manchester presets; the year-window response was verified live.
-- One deliberately **curated, source-backed** first link connects [Castlefield](https://en.wikipedia.org/wiki/Castlefield) to [Mamucium](https://en.wikipedia.org/wiki/Mamucium), the former Roman fort. The connection follows Castlefield's Wikipedia account; a linked article does not prove that the fort or any other feature was present in the precise year selected. The relation is explicitly distinguished from generic nearby Wikipedia articles.
+- One deliberately **curated, source-backed** first link is now promoted to a visible discovery card and connects [Castlefield](https://en.wikipedia.org/wiki/Castlefield) to [Mamucium](https://en.wikipedia.org/wiki/Mamucium), the former Roman fort. The connection follows Castlefield's Wikipedia account; a linked article does not prove that the fort or any other feature was present in the precise year selected. The relation is explicitly distinguished from generic nearby Wikipedia articles.
 - In-browser breadcrumb navigation preserves the visitor's year when they choose a new place. The place summary and nearby articles provide **general context, not year-specific evidence**.
 
 **Interaction test (simulated DOM, not a live-device test):** Search Castlefield → select Q2308772 → change to 79 CE → follow Mamucium Q3285089 → keep 79 CE in the shareable URL; breadcrumb trail preserves Manchester → Castlefield → Mamucium. All checks passed.
 
 Wikimedia has [2026 API usage limits](https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits). Calls are identified, bounded, user-triggered or made on selected place changes, and responses are cacheable for a short period. A popular public release would require stronger server-side caching/quotas and an operational review. **Wikidata search is a place-entry mechanism, not comprehensive global geocoding.**
+
+### Version 0.4 — Mobile map flip, real-map pointers and clearer trails
+
+- Replaced the former **side-by-side/vertically stacked** embeds with a **single shared viewport**. Visitors flip between *Past · reconstruction* and *Today* using labelled, keyboard-operable buttons. The inactive pane is hidden from pointer and keyboard interaction, but preserved so toggling doesn't reload its iframe. There is no synced pan/zoom yet. The new switcher controls and archive link were externally observed on the live page on 4 November 2026, and a mocked button-state / no-reload test passed. Real-device testing is still outstanding.
+- Added a collapsed **Want an actual old map?** disclosure with links to [NLS georeferenced map viewers](https://maps.nls.uk/geo/explore/) and the [David Rumsey Historical Map Collection](https://www.davidrumsey.com/view). This is **external exploration only**, not a licensed in-app historical raster overlay. NLS offers a free API layer for some 1920s–1940s OS maps of Great Britain; other layers have subscriptions/rights checks. Rumsey maps have item-level rights checks, particularly post-1929.
+- Promoted the curated **Castlefield → Mamucium** sourced lead out of the generic nearby list, into an immediately visible `A thread to follow` card. The link is still explicitly attributed to Wikipedia and is not proof of an event in the exact selected year. Other geographically nearby links remain collapsible.
+- A first **The National Archives Discovery API** research test returned 51 catalogue matches for `Castlefield Manchester`, including photograph catalogue entries from 1985/1986 and an 1854 engineering letter held by Bolton Archives. This is a **tested future connector, not currently rendered in Time-Layer**. Catalogue items describe records, not necessarily digitised images or documents; item URLs/rights need verification.
+
+The evolving [discovery-warren design and tested source inventory](docs/discovery-warren.md) explains which relationships should be visible, the required source/date/licence fields, and the recommended small pilot for archaeological and archival trails.
 
 ### Intentional limits
 
