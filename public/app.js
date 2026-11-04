@@ -9,9 +9,35 @@ const VIEWS = Object.freeze({
   piccadilly: { label: "Piccadilly", lat: 53.4773, lng: -2.2318, zoom: 14, hint: "Compare the transport landscape with the modern street network." }
 });
 
-const START_YEAR = 1600;
+// OHM's date control covers approximately 4000 BCE onward; the year
+// numbering below is astronomical: 0 = 1 BCE, -999 = 1000 BCE.
+const START_YEAR = -3999;
 const END_YEAR = 2026;
 const DEFAULT_YEAR = 1900;
+const ERAS = Object.freeze({
+  ancient: { min: -3999, max: 0, defaultYear: -999 },
+  early: { min: 1, max: 999, defaultYear: 79 },
+  medieval: { min: 1000, max: 1599, defaultYear: 1200 },
+  recent: { min: 1600, max: 2026, defaultYear: 1900 }
+});
+
+function eraForYear(year) {
+  return Object.keys(ERAS).find(key => {
+    const era = ERAS[key];
+    return year >= era.min && year <= era.max;
+  }) || "recent";
+}
+
+function formatYear(year) {
+  return year <= 0 ? String(1 - year) + " BCE" : String(year) + " CE";
+}
+
+function historicalDate(year) {
+  // OHM supports negative years. -0999 means 1000 BCE; 0000 means 1 BCE.
+  if (year < 0) return "-" + String(Math.abs(year)).padStart(4, "0");
+  if (year === 0) return "0000";
+  return String(year);
+}
 let currentView = "centre";
 let currentYear = DEFAULT_YEAR;
 
@@ -20,6 +46,8 @@ const modernFrame = document.getElementById("modern-map");
 const historicalLink = document.getElementById("historical-link");
 const modernLink = document.getElementById("modern-link");
 const range = document.getElementById("year");
+const rangeStart = document.getElementById("range-start");
+const rangeEnd = document.getElementById("range-end");
 const yearOutput = document.getElementById("year-output");
 const mapYear = document.getElementById("map-year");
 const placeTitle = document.getElementById("place-title");
@@ -28,8 +56,9 @@ const status = document.getElementById("map-status");
 const share = document.getElementById("share");
 
 function validYear(value) {
+  if (value === null || !/^-?\d+$/.test(String(value))) return DEFAULT_YEAR;
   const number = Number(value);
-  if (!Number.isInteger(number)) return DEFAULT_YEAR;
+  if (!Number.isSafeInteger(number)) return DEFAULT_YEAR;
   return Math.min(END_YEAR, Math.max(START_YEAR, number));
 }
 
@@ -38,9 +67,9 @@ function validView(value) {
 }
 
 function historyUrl(view, year) {
-  // Official OpenHistoricalMap embed: #map=zoom/latitude/longitude&date=year&layer=O
+  // Official OHM embed: negative years are supported (e.g. -0999 = 1000 BCE).
   return "https://embed.openhistoricalmap.org/#map=" +
-    view.zoom + "/" + view.lat + "/" + view.lng + "&date=" + year + "&layer=O";
+    view.zoom + "/" + view.lat + "/" + view.lng + "&date=" + historicalDate(year) + "&layer=O";
 }
 
 function modernEmbedUrl(view) {
@@ -65,9 +94,20 @@ function updateAddress() {
 
 function updateControls() {
   const view = VIEWS[currentView];
+  const eraKey = eraForYear(currentYear);
+  const era = ERAS[eraKey];
+  range.min = String(era.min);
+  range.max = String(era.max);
   range.value = String(currentYear);
-  yearOutput.textContent = String(currentYear);
-  mapYear.textContent = String(currentYear);
+  rangeStart.textContent = formatYear(era.min);
+  rangeEnd.textContent = formatYear(era.max);
+  yearOutput.textContent = formatYear(currentYear);
+  mapYear.textContent = formatYear(currentYear);
+  document.querySelectorAll("[data-era]").forEach(button => {
+    const active = button.dataset.era === eraKey;
+    button.classList.toggle("is-selected", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   placeTitle.textContent = view.label;
   placeHint.textContent = view.hint;
 
@@ -88,7 +128,7 @@ function render({ updateModern = false, updateUrl = true } = {}) {
   const historical = historyUrl(view, currentYear);
   historyFrame.src = historical;
   historicalLink.href = historical;
-  historyFrame.title = "OpenHistoricalMap historical view of " + view.label + " in " + currentYear;
+  historyFrame.title = "OpenHistoricalMap historical view of " + view.label + " in " + formatYear(currentYear);
 
   if (updateModern) {
     modernFrame.src = modernEmbedUrl(view);
@@ -98,7 +138,7 @@ function render({ updateModern = false, updateUrl = true } = {}) {
 
   updateControls();
   if (updateUrl) updateAddress();
-  status.textContent = "Maps set to " + view.label + " in " + currentYear +
+  status.textContent = "Maps set to " + view.label + " in " + formatYear(currentYear) +
     ". You can pan each map independently; date and feature coverage are not guaranteed.";
 }
 
@@ -119,6 +159,12 @@ function chooseYear(year) {
   render();
 }
 
+function chooseEra(key) {
+  if (!Object.prototype.hasOwnProperty.call(ERAS, key)) return;
+  if (eraForYear(currentYear) === key) return;
+  chooseYear(ERAS[key].defaultYear);
+}
+
 function initialiseFromAddress() {
   const params = new URLSearchParams(window.location.search);
   currentView = validView(params.get("view"));
@@ -134,9 +180,13 @@ document.querySelectorAll("[data-year]").forEach(button => {
   button.addEventListener("click", () => chooseYear(button.dataset.year));
 });
 
+document.querySelectorAll("[data-era]").forEach(button => {
+  button.addEventListener("click", () => chooseEra(button.dataset.era));
+});
+
 // Preview the year while sliding, and reload only on release/commit to avoid excessive tile requests.
 range.addEventListener("input", () => {
-  yearOutput.textContent = range.value;
+  yearOutput.textContent = formatYear(Number(range.value));
 });
 range.addEventListener("change", () => chooseYear(range.value));
 
