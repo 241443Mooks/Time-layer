@@ -6,7 +6,7 @@ A tiny, curiosity-led experiment: **look at the same part of Manchester today an
 
 ## Status
 
-**Live deployment (user-confirmed 4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The owner has explored the initial map and reported it interesting but somewhat clunky. The expanded year controls committed on 4 November have not yet been independently browser-checked or confirmed deployed. This is an exploratory build, not a published historical reference. A year choice controls which records OpenHistoricalMap renders; it **does not** select a georeferenced scan of a map actually drawn in that year.
+**Live deployment (user-confirmed 4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The owner has explored the initial map and reported it interesting but somewhat clunky. The expanded year controls and new historical-evidence implementation committed on 4 November have not yet been independently browser-checked or confirmed deployed. This is an exploratory build, not a published historical reference. A year choice controls which records OpenHistoricalMap renders; it **does not** select a georeferenced scan of a map actually drawn in that year.
 
 ## First experiment (deliberately small)
 
@@ -16,13 +16,29 @@ Start at Manchester city centre. Choose among five *viewpoints to investigate* (
 
 **Not yet established:** whether the chosen sites have sufficient mapped historical coverage, whether views line up closely enough for meaningful comparisons, or whether visitors find the experience compelling. The five view presets are **not** five verified historical events.
 
-### What version 0.1 does
+### What the time-travel comparison does
 
 - Two independent, interactive map embeds side by side (stacked on phones).
 - Official [OpenHistoricalMap embed](https://github.com/OpenHistoricalMap/openhistoricalmap-embed), filtered by selected year, and the official [OpenStreetMap embed](https://wiki.openstreetmap.org/wiki/Export) for present-day comparison.
 - Five Manchester viewpoint presets, four historical-period controls (4000 BCE–1 BCE, 1–999 CE, 1000–1599 CE, 1600–2026 CE), a year slider within each period, quick jumps (including Roman-era 79 CE), links to open each source, and shareable URL parameters. Previously shared links such as `?view=centre&year=1678` remain compatible.
 - BCE date formatting follows OpenHistoricalMap's astronomical year convention: `year=-999` in this site's URL shows **1000 BCE** and is passed as `date=-0999` to the embed; `year=0` means **1 BCE**, not an invented year zero. These are **date selections**, not claims of feature coverage.
-- No API keys, databases, accounts, analytics, generated claims, scraped map screenshots or build system.
+- No accounts, analytics, scraped map screenshots or external map keys. The new evidence panel uses a minimal Cloudflare Worker as a read-only proxy to the OHM Overpass API.
+
+### Version 0.2 — What do we know here?
+
+**Built in source, deployment not independently confirmed.** A collapsed-by-default **Historical evidence** section sits between the timeline controls and the maps, so the time-travel experience remains primary. On demand, the panel:
+
+- Calls a same-origin **`GET /api/evidence?view=centre`** Worker endpoint, which performs a bounded, read-only query to [OpenHistoricalMap Overpass](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass). This avoids historical browser CORS difficulties; the public service may still time out or reject requests.
+- Queries a fixed ~1 km area around the **chosen Manchester preset**, not the part of either map that has been panned. Returns up to **150** dated or named historic map features. This is a **biased limited selection**, never a measure of all mapped features or completeness.
+- Shows records returned, records with date tags, records whose **interpretable start/end year bounds are compatible** with the selected year, and records with source tags. The presence of a source tag does not independently establish reliability.
+- Offers original-feature links and source links where tags include a valid URL; displays date text verbatim and treats unparseable/approximate/EDTF expressions as **unresolved**, not invented precise events.
+- Shows up to eight nearby record starts/ends you can jump to. These are dates **attached to returned features**, not a comprehensive historical-events timeline.
+- Caches the bounded records per viewpoint in the browser session; moving the year slider updates the panel locally with no new API request. Press **Check records again** to refresh.
+- Handles zero results and failed/timed-out queries explicitly. The maps continue working when the evidence service is unavailable. On phones, the panel is collapsed until requested; a fuller mobile layout redesign is deferred.
+
+**Interpretation rule:** *No record returned* ≠ *Nothing existed*. *Compatible date tags* ≠ *Confirmed existence on that date*. The current iframe map layer may contain features absent from this narrow query.
+
+The Worker route is restricted to the five named presets, with fixed small bounds and a capped result count to limit third-party API load. It does not store or modify source data.
 
 ### Intentional limits
 
@@ -55,7 +71,7 @@ Or use Cloudflare's GitHub-connected deployment with **Build command: none**, **
 
 ## A sensible next step — only after testing
 
-1. Open the app in a desktop browser and on a phone, validate that both embeds load and the historical date really changes visible features.
+1. After Cloudflare redeploys, check the site in a desktop and mobile browser: the map embeds, date controls, **Historical evidence** toggle, and `/api/evidence?view=castlefield` (a JSON response or a clear upstream error). Test 1678 CE, 79 CE, and a BCE year. Confirm that moving the slider filters cached evidence without new network requests.
 2. Find **five specific OpenHistoricalMap features** with verifiable historical time bounds and original-feature links; check any `license=*` tags before describing/reusing them.
 3. If the idea proves interesting, replace the iframes with directly controlled [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) maps and the [OHM date-filtering plugin](https://github.com/OpenHistoricalMap/maplibre-gl-dates) for truly synchronised viewports and immediate date updates.
 4. Add a small evidence trail for each verified historical discovery: feature ID, date bounds, provenance, rights, and limitations.
