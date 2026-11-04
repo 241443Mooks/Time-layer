@@ -85,17 +85,21 @@ function setMapMode(mode) {
     button.setAttribute("aria-pressed", String(visible));
     button.classList.toggle("is-active", visible);
     mapPanes[key].classList.toggle("is-visible", visible);
-    mapPanes[key].setAttribute("aria-hidden", String(!visible));
-    mapPanes[key].inert = !visible;
-    // Prevent keyboard traversal of the inactive third-party embed.
+    const aligned = Boolean(document.getElementById("map-aligned-toggle")?.checked);
+    // Both iframes must stay inaccessible when the shared renderer is active.
+    mapPanes[key].setAttribute("aria-hidden", String(aligned || !visible));
+    mapPanes[key].inert = aligned || !visible;
     const iframe = mapPanes[key].querySelector("iframe");
-    if (iframe) iframe.tabIndex = visible ? 0 : -1;
+    if (iframe) iframe.tabIndex = aligned || !visible ? -1 : 0;
     const link = mapPanes[key].querySelector("a");
-    if (link) link.tabIndex = visible ? 0 : -1;
+    if (link) link.tabIndex = aligned || !visible ? -1 : 0;
   }
-  status.textContent = mode === "historical"
-    ? "Viewing historical reconstruction at " + formatYear(currentYear) + ". Flip to Today to compare. Maps do not sync after panning."
-    : "Viewing today's reference map. Flip back to the reconstructed past. Maps do not sync after panning.";
+  const aligned = Boolean(document.getElementById("map-aligned-toggle")?.checked);
+  status.textContent = aligned
+    ? "Shared map beta: flip between past and today at exactly the same camera position and zoom."
+    : (mode === "historical"
+      ? "Viewing historical reconstruction at " + formatYear(currentYear) + ". Flip to Today to compare. Maps do not sync after panning."
+      : "Viewing today's reference map. Flip back to the reconstructed past. Maps do not sync after panning.");
 }
 Object.entries(mapModeButtons).forEach(([mode, button]) => {
   button.addEventListener("click", () => setMapMode(mode));
@@ -192,8 +196,11 @@ function render({ updateModern = false, updateUrl = true } = {}) {
   updateControls();
   setMapMode(activeMap);
   if (updateUrl) updateAddress();
-  status.textContent = "Map centred on " + view.label + " for " + formatYear(currentYear) +
-    ". Flip between historical reconstruction and today; the views do not synchronise after panning.";
+  status.textContent = document.getElementById("map-aligned-toggle")?.checked
+    ? "Shared map beta: " + view.label + " · " + formatYear(currentYear) +
+      ". Pan or zoom, then flip to compare at the same position."
+    : "Map centred on " + view.label + " for " + formatYear(currentYear) +
+      ". Flip between historical reconstruction and today; the views do not synchronise after panning.";
   window.dispatchEvent(new CustomEvent("time-layer-selection", {
     detail: {
       view: customPlace ? "world" : currentView,
