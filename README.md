@@ -28,12 +28,12 @@ Start at Manchester city centre. Choose among five *viewpoints to investigate* (
 
 **Deployed page and evidence endpoint confirmed 4 November 2026; interactive behaviour not fully validated.** A collapsed-by-default **Historical evidence** section sits between the timeline controls and the maps, so the time-travel experience remains primary. On demand, the panel:
 
-- Calls a same-origin **`GET /api/evidence?view=centre`** Worker endpoint, which performs a bounded, read-only query to [OpenHistoricalMap Overpass](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass). This avoids historical browser CORS difficulties; the public service may still time out or reject requests.
+- Calls a same-origin **`GET /api/evidence?view=centre&year=1678`** Worker endpoint, which performs a bounded, read-only query to [OpenHistoricalMap Overpass](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass). The server filters by a **25-year window before the 150-record limit**, then the browser checks the selected year precisely. This makes older results less likely to be displaced by recent ones, but **does not** establish completeness. The public service may still time out or reject requests. Old requests without `year` remain supported as legacy broad samples.
 - Queries a fixed ~1 km area around the **chosen Manchester preset**, not the part of either map that has been panned. Returns up to **150** dated or named historic map features. This is a **biased limited selection**, never a measure of all mapped features or completeness.
 - Shows total records checked, records with date tags, records whose **interpretable start/end year bounds are compatible** with the selected year, and source tags **among matching records**. The main feature list contains **only date-compatible results**, not later structures (e.g. Ardwick Bridge in a 1000 BCE view). A machine-readable start year is required before a feature is shown as a match, and known end bounds are respected; end-only, unparseable, approximate-only and undated records remain unresolved rather than presumed ancient. Nonmatching/undated features are not silently presented as present in that year. The presence of a source tag does not independently establish reliability.
 - Offers original-feature links and source links where tags include a valid URL; displays date text verbatim and treats unparseable/approximate/EDTF expressions as **unresolved**, not invented precise events.
 - Shows up to eight nearby record starts/ends **on or before the selected year** that you can jump to. Later dates are suppressed. These are dates **attached to returned features**, not a comprehensive historical-events timeline.
-- Caches the bounded records per viewpoint in the browser session; moving the year slider updates the panel locally with no new API request. Press **Check records again** to refresh.
+- Caches at most twelve 25-year windows per viewpoint in the browser session; moving the year slider within a retrieved period updates the panel locally, while crossing into another period triggers a new query only if the evidence panel is open. Press **Check records again** to refresh.
 - Handles zero results and failed/timed-out queries explicitly. The maps continue working when the evidence service is unavailable. On phones, the panel is collapsed until requested; a fuller mobile layout redesign is deferred.
 
 **Interpretation rule:** *No record returned* ≠ *Nothing existed*. *Compatible date tags* ≠ *Confirmed existence on that date*. The current iframe map layer may contain features absent from this narrow query.
@@ -76,13 +76,15 @@ Or use Cloudflare's GitHub-connected deployment with **Build command: none**, **
 3. If the idea proves interesting, replace the iframes with directly controlled [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) maps and the [OHM date-filtering plugin](https://github.com/OpenHistoricalMap/maplibre-gl-dates) for truly synchronised viewports and immediate date updates.
 4. Add a small evidence trail for each verified historical discovery: feature ID, date bounds, provenance, rights, and limitations.
 
-## Next evidence layer: one official heritage source
+## First heritage enrichment: Historic England (Castlefield pilot)
 
-The next proposed addition is **Historic England's National Heritage List for England**, beginning with Scheduled Monuments (Roman remains, archaeological sites, castles and other protected locations), followed only if useful by listed-building points. The data is official, England-only and licensed under the OGL, with required Historic England and Crown/OS attribution.
+**Live route confirmed 4 November 2026:** `GET /api/heritage?view=castlefield` returns officially protected Scheduled Monuments in a small fixed area. Its first result is [Remains of eastern wall of the Roman fort (NHLE 1001953)](https://historicengland.org.uk/listing/the-list/list-entry/1001953).
 
-Crucially, legal **scheduling/listing dates are not construction or occupation dates**. The heritage layer must be explicitly separated from records compatible with a chosen year until each site's historical period can be independently established.
+Inside the main evidence panel, Castlefield now offers a separately collapsible **Protected heritage nearby** section. It is fetched only on opening, is limited to a dozen records, and is **not** mixed into the selected-year matches. The historical map remains usable if Historic England is unavailable.
 
-See [the evidence-layer research and staged implementation plan](docs/evidence-layers.md). **This second API is researched, not yet integrated.** The mobile evidence panel stays collapsed while we test usefulness and reduce scrolling.
+Historic England's [NHLE Scheduled Monuments API](https://www.api.gov.uk/he/national-heritage-list-for-england-nhle/) is England-only and published under the **Open Government Licence**. Attribution includes Historic England and relevant Crown/Ordnance Survey notices. Legal scheduling dates are **not** when a monument was constructed or occupied; the first retrieved record did not supply a scheduling date.
+
+See the [evidence-layer plan](docs/evidence-layers.md) for the verified pilot and next tasks. Wider coverage, matching official site ages to historical years, archaeological reports, and a scanned-map overlay are **not yet implemented**.
 
 ## Rights and operating costs
 
