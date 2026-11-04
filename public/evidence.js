@@ -25,8 +25,8 @@
   let requestId = 0;
   const WINDOW_YEARS = 25;
 
-  function cacheKey(view, year) {
-    return view + ":" + (Math.floor(year / WINDOW_YEARS) * WINDOW_YEARS);
+  function cacheKey(view, year, placeId) {
+    return (placeId || view) + ":" + (Math.floor(year / WINDOW_YEARS) * WINDOW_YEARS);
   }
 
   function yearLabel(year) {
@@ -240,7 +240,7 @@
     if (!panel.open) return;
     const view = selected.view;
     const year = selected.year;
-    const key = cacheKey(view, year);
+    const key = cacheKey(view, year, selected.placeId);
     if (!force && cached.has(key)) {
       if (pending && pendingKey !== key) {
         pending.abort();
@@ -262,13 +262,17 @@
     status.textContent = "Checking nearby dated records around " + selected.label + "…";
     teaser.textContent = "Checking records…";
     try {
-      const response = await fetch("/api/evidence?view=" + encodeURIComponent(view) +
+      const target = selected.placeId && view === "world" ?
+        "place=" + encodeURIComponent(selected.placeId) :
+        "view=" + encodeURIComponent(view);
+      const response = await fetch("/api/evidence?" + target +
         "&year=" + encodeURIComponent(String(year)), {
         headers: { Accept: "application/json" },
         signal: controller.signal
       });
       const payload = await response.json();
-      if (!response.ok || !payload || !Array.isArray(payload.elements) || payload.view !== view) {
+      if (!response.ok || !payload || !Array.isArray(payload.elements) || payload.view !== view ||
+          (view === "world" && payload.placeId !== selected.placeId)) {
         throw new Error((payload && payload.error) || "The evidence API returned an unexpected response.");
       }
       if (thisRequest !== requestId) return;
