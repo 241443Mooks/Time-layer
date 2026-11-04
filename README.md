@@ -46,7 +46,7 @@ The Worker accepts five old named presets or a validated Wikidata QID; coordinat
 
 ### Version 0.3 — Worldwide place discovery and a first rabbit hole
 
-**Live endpoints checked 4 November 2026:**
+**Live endpoints checked 4 November 2026:** Outside the UK, `/api/place-search?q=Kyoto` returned Kyoto Q34600 (35.011611, 135.768111), and `/api/place?id=Q34600` returned a Wikipedia summary and nine nearby article links. This confirms international place discovery, **not** the completeness of historical Japanese map features.
 
 - `GET /api/place-search?q=Castlefield`: explicit user-submitted search through [Wikidata's Action API](https://www.wikidata.org/wiki/Wikidata:Data_access); the site searches at most 16 candidate entities and displays up to seven with usable coordinates. There is **no autocomplete** or unbounded geocoding. Place labels and coordinates are CC0 Wikidata metadata.
 - `GET /api/place?id=Q2308772`: a Wikidata place profile, an English [Wikipedia REST summary](https://www.mediawiki.org/wiki/Wikimedia_REST_API) if available, and up to nine geographically nearby Wikipedia articles with Wikidata identifiers and coordinates. Nearby articles are not time-filtered and may refer to modern places. Sources and their reuse attribution are shown.
