@@ -1,3 +1,5 @@
+import { placeSearch, placeDetail, resolvePlace } from "./wiki.js";
+
 // Read-only, bounded OpenHistoricalMap evidence proxy.
 // Browsers have historically encountered CORS issues contacting OHM Overpass.
 const OVERPASS = "https://overpass-api.openhistoricalmap.org/api/interpreter";
@@ -135,6 +137,8 @@ function overpassQuery(bbox, period) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/api/place-search") return placeSearch(request);
+    if (url.pathname === "/api/place") return placeDetail(request);
     if (url.pathname === "/api/heritage") {
       return heritageResponse(request);
     }
@@ -144,9 +148,13 @@ export default {
     if (request.method !== "GET") {
       return json({ error: "Only GET is supported." }, 405);
     }
-    const view = url.searchParams.get("view");
-    if (!view || !Object.prototype.hasOwnProperty.call(VIEWPOINTS, view)) {
-      return json({ error: "Choose one of the five supported Manchester viewpoints." }, 400);
+    const placeId = url.searchParams.get("place");
+    const view = placeId ? "world" : url.searchParams.get("view");
+    if (!placeId && (!view || !Object.prototype.hasOwnProperty.call(VIEWPOINTS, view))) {
+      return json({ error: "Choose a supported preset or a Wikidata place." }, 400);
+    }
+    if (placeId && !/^Q[1-9]\d{0,11}$/.test(placeId)) {
+      return json({ error: "Invalid place identifier." }, 400);
     }
     const suppliedYear = url.searchParams.get("year");
     const year = suppliedYear === null ? null : validHistoricalYear(suppliedYear);
@@ -154,7 +162,17 @@ export default {
       return json({ error: "Year must be an integer from 3999 BCE through 2026 CE." }, 400);
     }
     const period = year === null ? null : periodForYear(year);
-    const bbox = bounds(VIEWPOINTS[view]);
+    let centre = placeId ? null : VIEWPOINTS[view];
+    if (placeId) {
+      try {
+        const place = await resolvePlace(placeId);
+        if (!place) return json({ error: "This place has no usable map coordinates." }, 404);
+        centre = [place.lat, place.lng];
+      } catch (_error) {
+        return json({ error: "Wikidata coordinates are temporarily unavailable. The maps still work." }, 503);
+      }
+    }
+    const bbox = bounds(centre);
     try {
       const response = await fetch(OVERPASS, {
         method: "POST",
@@ -181,6 +199,7 @@ export default {
         }));
       return json({
         view,
+        placeId: placeId || null,
         bbox,
         source: "OpenHistoricalMap Overpass API",
         queried: new Date().toISOString(),
