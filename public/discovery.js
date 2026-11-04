@@ -78,7 +78,12 @@
 
   function renderConnections(list) {
     connections.replaceChildren();
-    const items = Array.isArray(list) ? list.filter(safePlace) : [];
+    const seen = new Set();
+    const items = Array.isArray(list) ? list.filter(place => {
+      if (!safePlace(place) || seen.has(place.id) || place.id === currentId) return false;
+      seen.add(place.id);
+      return true;
+    }) : [];
     connectionCount.textContent = items.length ? "(" + items.length + ")" : "(none available)";
     if (!items.length) {
       connections.appendChild(make("li", "discovery-empty", "No nearby source-linked articles were returned for this place."));
@@ -90,6 +95,9 @@
       const button = make("button", "discovery-connection");
       button.type = "button";
       button.appendChild(make("strong", "", place.label));
+      if (place.kind === "source-backed-lead") {
+        button.appendChild(make("em", "discovery-researched", "Source-backed research lead"));
+      }
       button.appendChild(make("span", "", place.description || "Nearby Wikipedia article"));
       button.addEventListener("click", () => {
         navigate(place);
@@ -110,7 +118,7 @@
       "No short English Wikipedia introduction is available for this place. Its Wikidata record may still have useful references.";
     setLink(wikidata, place.wikidataUrl);
     setLink(wikipedia, data.summary?.link);
-    renderConnections(data.connections);
+    renderConnections([...(data.featured || []), ...(data.connections || [])]);
     discoveryStatus.textContent = "General historical and geographical context from Wikimedia. " +
       "These links are not filtered to your selected year." +
       (data.warnings?.length ? " Some sources are temporarily unavailable." : "");
