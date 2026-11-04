@@ -114,16 +114,15 @@
   }
 
   function features(records) {
-    const year = selected.year;
-    const priority = { compatible: 0, unresolved: 1, "before-start": 2, "after-end": 2 };
-    return records.slice().sort((a, b) => {
-      const diff = priority[dateState(a.tags, year)] - priority[dateState(b.tags, year)];
-      if (diff) return diff;
-      const named = Number(Boolean(b.tags.name || b.tags["name:en"])) -
-        Number(Boolean(a.tags.name || a.tags["name:en"]));
-      if (named) return named;
-      return displayName(a).localeCompare(displayName(b));
-    }).slice(0, 8);
+    // The main list must never show records dated after (or ending before)
+    // the selected year. Unresolved dates need a separate research view.
+    return records.filter(record => dateState(record.tags, selected.year) === "compatible")
+      .sort((a, b) => {
+        const named = Number(Boolean(b.tags.name || b.tags["name:en"])) -
+          Number(Boolean(a.tags.name || a.tags["name:en"]));
+        if (named) return named;
+        return displayName(a).localeCompare(displayName(b));
+      }).slice(0, 8);
   }
 
   function renderFeature(record) {
@@ -168,10 +167,11 @@
         }
       }
     });
-    return events.sort((a,b) => {
-      const delta = Math.abs(a.year - selected.year) - Math.abs(b.year - selected.year);
-      return delta || a.year - b.year;
-    }).slice(0, 8);
+    // A time traveller in 1000 BCE should not see dates from 1793 CE.
+    // Past starts/ends remain useful as events already recorded by that year.
+    return events.filter(event => event.year <= selected.year)
+      .sort((a,b) => b.year - a.year || a.name.localeCompare(b.name))
+      .slice(0, 8);
   }
 
   function showRecords(payload) {
@@ -179,26 +179,30 @@
       record && ["node", "way", "relation"].includes(record.type) &&
       Number.isSafeInteger(record.id) && record.tags && typeof record.tags === "object");
     const dated = records.filter(record => hasDateTag(record.tags)).length;
-    const sourced = records.filter(record => hasSource(record.tags)).length;
-    const compatible = records.filter(record => dateState(record.tags, selected.year) === "compatible").length;
+    const matching = records.filter(record => dateState(record.tags, selected.year) === "compatible");
+    const unresolved = records.filter(record => dateState(record.tags, selected.year) === "unresolved").length;
+    const sourced = matching.filter(record => hasSource(record.tags)).length;
     stats.count.textContent = String(records.length);
     stats.dated.textContent = String(dated);
-    stats.compatible.textContent = String(compatible);
+    stats.compatible.textContent = String(matching.length);
     stats.sourced.textContent = String(sourced);
-    coverage.textContent = (payload.capped ? "The query reached its " + payload.limit + "-record limit; " : "This is a bounded local search; ") +
-      "the results do not measure historical completeness. " +
-      "Only strictly interpretable start/end years are compared; approximate or EDTF dates remain unresolved. " +
-      "A 'compatible' date does not confirm existence, location or mapping accuracy.";
+    coverage.textContent = (payload.capped ? "This query reached its " + payload.limit + "-record cap and may miss older records. " : "This is a bounded, selective local query. ") +
+      "Showing only features with date bounds compatible with " + yearLabel(selected.year) + ". " +
+      unresolved + " returned records have unresolved dates and are not shown as matches. " +
+      "A compatible date does not prove a feature existed in that year. " +
+      "Listing/registration dates from other archives will not be treated as construction dates.";
     featuresList.replaceChildren();
-    if (records.length === 0) {
-      emptyList(featuresList, "No qualifying records were returned here. This is a gap in this query, not a claim that the area was empty.");
+    if (matching.length === 0) {
+      emptyList(featuresList,
+        "No date-compatible records found for " + yearLabel(selected.year) +
+        " in this limited sample. This does NOT mean the place was uninhabited or undocumented; older records may be outside this query.");
     } else {
-      features(records).forEach(record => featuresList.appendChild(renderFeature(record)));
+      features(matching).forEach(record => featuresList.appendChild(renderFeature(record)));
     }
     eventsList.replaceChildren();
     const events = datedEvents(records);
     if (!events.length) {
-      emptyList(eventsList, "No machine-readable start or end years found in this sample.");
+      emptyList(eventsList, "No machine-readable changes dated on or before " + yearLabel(selected.year) + " were found in this sample.");
     } else {
       events.forEach(event => {
         const li = make("li", "evidence-event");
@@ -212,9 +216,10 @@
         eventsList.appendChild(li);
       });
     }
-    status.textContent = "Viewing " + selected.label + ", " + yearLabel(selected.year) +
-      ". " + records.length + " nearby tagged records returned" + (payload.capped ? " (limit reached)" : "") + ".";
-    teaser.textContent = records.length + " nearby records · " + yearLabel(selected.year);
+    status.textContent = "Viewing " + selected.label + " in " + yearLabel(selected.year) +
+      ": " + matching.length + " date-compatible feature" + (matching.length === 1 ? "" : "s") +
+      " from " + records.length + " returned records" + (payload.capped ? " (sample limit reached)" : "") + ".";
+    teaser.textContent = matching.length + " matches · " + yearLabel(selected.year);
     results.hidden = false;
   }
 
