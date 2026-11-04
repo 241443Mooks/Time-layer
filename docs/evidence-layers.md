@@ -6,7 +6,7 @@
 
 - Scope: global community-built historical geographical features with optional start/end dates, [EDTF uncertainty](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Tags/Key/start_date), and source tags.
 - Current prototype queries a **bounded fixed box**, returns up to 150 records, and filters the *display* locally to the chosen year.
-- **Main list:** only records whose available `start_date`/`end_date` bounds are compatible with the year. Earlier/later records are never silently displayed as contemporary. Records with neither an interpretable start nor end are **unresolved**, not “present”.
+- **Main list:** requires an interpretable `start_date` no later than the selected year and, where a parseable `end_date` exists, requires that the selected year is no later than that end. Future/expired records are hidden. End-only, unparseable/EDTF-only and undated records are **unresolved**, not assumed to have been present. A missing end date does not prove persistence, so all matches are described as *date-compatible*, never as historical facts.
 - **Earlier recorded changes:** only start/end dates up to the chosen year; later dates are hidden. This is for exploration, **not a comprehensive historical timeline**.
 - **Data completeness:** a missing match may reflect the query cap, incomplete historic mapping, an uncertain/unparseable date, or missing data—not an empty landscape.
 - **Quality follow-up:** understand [OHM EDTF date conventions](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Dates_and_Times), bias of the first 150 records, and whether a *date-aware server query* would reduce false zero-match impressions while keeping the slider responsive.
