@@ -4,11 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#173a36">
-  <meta name="description" content="Explore Manchester then and now, with historical mapping across time.">
-  <title>Time-Layer · Manchester then & now</title>
+  <meta name="description" content="Choose a place anywhere in the world, travel to a year and follow evidence-linked historical discoveries.">
+  <title>Time-Layer · Explore a place through time</title>
   <link rel="stylesheet" href="./styles.css">
   <script src="./evidence.js" defer></script>
   <script src="./heritage.js" defer></script>
+  <script src="./discovery.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -24,36 +25,43 @@
     </div>
     <div class="hero">
       <div>
-        <p class="eyebrow">A geographical curiosity experiment · 001</p>
-        <h1>Every street has<br><em>more than one story.</em></h1>
-        <p class="intro">Two views of the same place. One is Manchester today. The other is what contributors have mapped at a chosen point in history. Move through time and see what catches your eye.</p>
+        <p class="eyebrow">A time traveller’s atlas · an evolving experiment</p>
+        <h1>Choose somewhere.<br><em>Travel through time.</em></h1>
+        <p class="intro">Pick a place anywhere on Earth. Choose a year. Compare then with now, investigate the evidence, and follow your curiosity to somewhere new.</p>
       </div>
-      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.2</strong></div>
+      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.3</strong></div>
     </div>
   </header>
 
   <main id="explore">
-    <section class="control-panel" aria-labelledby="where-heading">
+    <section class="control-panel destination-panel" aria-labelledby="where-heading">
       <div class="panel-head">
         <div>
-          <p class="eyebrow dark">01 / Choose a viewpoint</p>
-          <h2 id="where-heading">Where shall we look?</h2>
+          <p class="eyebrow dark">01 / Choose a place</p>
+          <h2 id="where-heading">Where would you like to go?</h2>
         </div>
-        <p class="helper">These are places to explore, not verified historical events.</p>
+        <p class="helper">Search for cities, settlements, landmarks and other places with coordinates in Wikidata.</p>
       </div>
-      <div class="view-list" id="view-list" role="group" aria-label="Manchester viewpoints">
-        <button type="button" class="view-option is-selected" data-view="centre" aria-pressed="true">City centre</button>
-        <button type="button" class="view-option" data-view="castlefield" aria-pressed="false">Castlefield</button>
-        <button type="button" class="view-option" data-view="ancoats" aria-pressed="false">Ancoats</button>
-        <button type="button" class="view-option" data-view="northern-quarter" aria-pressed="false">Northern Quarter</button>
-        <button type="button" class="view-option" data-view="piccadilly" aria-pressed="false">Piccadilly</button>
+      <form id="place-search-form" class="place-search-form" role="search">
+        <label class="sr-only" for="place-query">Search for a place anywhere in the world</label>
+        <input id="place-query" name="q" type="search" minlength="2" maxlength="80" autocomplete="off" placeholder="Try Rome, Kyoto, Castlefield…" required>
+        <button type="submit">Find a place <span aria-hidden="true">↗</span></button>
+      </form>
+      <p id="place-search-status" class="search-status" role="status" aria-live="polite"></p>
+      <ul id="place-search-results" class="place-search-results" aria-label="Choose a matching place"></ul>
+      <div class="destination-current">
+        <span>NOW EXPLORING</span>
+        <strong id="selected-place">Manchester city centre</strong>
+        <button type="button" class="example-place" data-place-example="Q2308772">Try Castlefield</button>
+        <button type="button" class="example-place" data-place-example="Q18125">Try Manchester</button>
       </div>
+      <p class="helper location-disclaimer">Locations come from Wikidata and represent approximate modern reference points, not necessarily their historic locations or boundaries. Search runs only when you submit it.</p>
     </section>
 
     <section class="timeline-panel" aria-labelledby="time-heading">
       <div class="panel-head time-head">
         <div>
-          <p class="eyebrow dark">02 / Travel through time</p>
+          <p class="eyebrow dark">02 / Choose your year</p>
           <h2 id="time-heading">Choose a year.</h2>
         </div>
         <div class="year-readout" aria-live="polite"><span>THE YEAR</span><strong id="year-output">1900</strong></div>
@@ -67,6 +75,7 @@
       <label class="sr-only" for="year">Historical map year within the selected period</label>
       <input id="year" type="range" min="1600" max="2026" step="1" value="1900" aria-describedby="year-help">
       <div class="range-ends"><span id="range-start">1600 CE</span><span id="range-end">2026 CE</span></div>
+      <details class="year-shortcuts"><summary>Jump to a particular year</summary>
       <div class="year-presets" role="group" aria-label="Jump to a historical year">
         <button type="button" data-year="-3999">4000 BCE</button>
         <button type="button" data-year="-999">1000 BCE</button>
@@ -77,15 +86,70 @@
         <button type="button" data-year="1600">1600</button>
         <button type="button" data-year="1900">1900</button>
         <button type="button" data-year="2000">2000</button>
+      </div></details>
+      <p class="helper" id="year-help">Choose a period, then drag and release the slider. Historical coverage varies hugely across the world and by century; a blank map does not establish that nothing existed.</p>
+    </section>
+
+    <section class="map-section" aria-label="Compare maps">
+      <div class="map-head">
+        <div>
+          <p class="eyebrow dark">03 / Then versus now</p>
+          <h2 id="place-title">Manchester city centre</h2>
+        </div>
+        <button type="button" id="share" class="share-button">Copy this view ↗</button>
       </div>
-      <p class="helper" id="year-help">Choose a period, then drag and release the slider. BCE years are displayed without a year zero. Earlier dates are supported by OpenHistoricalMap, but coverage in Manchester may be sparse or absent.</p>
+      <p id="place-hint" class="place-hint">Look for streets, boundaries and buildings that appear, disappear or change.</p>
+      <div class="maps">
+        <article class="map-card">
+          <div class="map-card-head"><span class="map-index">A / THEN</span><h3>Historical view <span id="map-year">1900</span></h3></div>
+          <div class="frame-wrap">
+            <iframe id="historical-map" title="OpenHistoricalMap historical view of Manchester city centre in 1900" src="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <div class="map-card-foot"><span>OpenHistoricalMap · date-filtered community records</span><a id="historical-link" href="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
+        </article>
+        <article class="map-card">
+          <div class="map-card-head"><span class="map-index">B / NOW</span><h3>Present-day view</h3></div>
+          <div class="frame-wrap">
+            <iframe id="modern-map" title="Present-day OpenStreetMap of Manchester city centre" src="https://www.openstreetmap.org/export/embed.html?bbox=-2.2566%2C53.4743%2C-2.2286%2C53.4873&amp;layer=mapnik" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <div class="map-card-foot"><span>© OpenStreetMap contributors · ODbL</span><a id="modern-link" href="https://www.openstreetmap.org/#map=14/53.4808/-2.2426" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
+        </article>
+      </div>
+      <p class="map-note" id="map-status" role="status">Choose a viewpoint to re-centre both maps. Their panning and zooming are independent in this first version.</p>
+    </section>
+
+    <section id="discovery" class="discovery-section" aria-labelledby="discover-heading">
+      <div class="discovery-head">
+        <p class="eyebrow dark">04 / Discover what we know</p>
+        <h2 id="discover-heading">Every place has connections.</h2>
+        <p class="helper">Wikidata and Wikipedia offer background and nearby articles—not proof that these subjects existed in your selected year.</p>
+      </div>
+      <div class="discovery-panel">
+        <p class="discovery-status" id="discovery-status" role="status" aria-live="polite">Choose a place to explore its historical context.</p>
+        <h3 id="discovery-title">Manchester</h3>
+        <p class="discovery-description" id="discovery-description"></p>
+        <p class="discovery-summary" id="discovery-summary"></p>
+        <div class="discovery-links">
+          <a id="discovery-wikipedia" target="_blank" rel="noopener noreferrer" hidden>Read on Wikipedia ↗</a>
+          <a id="discovery-wikidata" target="_blank" rel="noopener noreferrer" hidden>View Wikidata record ↗</a>
+        </div>
+        <details class="discovery-nearby" id="discovery-nearby">
+          <summary>Follow a nearby connection <span id="discovery-connection-count"></span></summary>
+          <p>These are geographically nearby Wikipedia articles. They are not selected for the historical year, and some may concern much later places.</p>
+          <ul class="discovery-connections" id="discovery-connections"></ul>
+        </details>
+        <div class="discovery-breadcrumbs" id="discovery-breadcrumbs" hidden>
+          <p>YOUR EXPLORATION TRAIL</p>
+          <ol id="discovery-trail"></ol>
+        </div>
+      </div>
     </section>
 
     <section class="evidence-section" aria-label="Historical evidence">
       <details id="evidence-panel" class="evidence-panel">
         <summary>
           <span class="evidence-summary-label">
-            <span class="eyebrow dark">03 / Historical evidence</span>
+            <span class="eyebrow dark">05 / Historical evidence</span>
             <strong>What do we know here?</strong>
             <small id="evidence-teaser">Check nearby recorded features for the year you chose</small>
           </span>
@@ -135,44 +199,16 @@
       </details>
     </section>
 
-    <section class="map-section" aria-label="Compare maps">
-      <div class="map-head">
-        <div>
-          <p class="eyebrow dark">04 / Look closer</p>
-          <h2 id="place-title">Manchester city centre</h2>
-        </div>
-        <button type="button" id="share" class="share-button">Copy this view ↗</button>
-      </div>
-      <p id="place-hint" class="place-hint">Look for streets, boundaries and buildings that appear, disappear or change.</p>
-      <div class="maps">
-        <article class="map-card">
-          <div class="map-card-head"><span class="map-index">A / THEN</span><h3>Historical view <span id="map-year">1900</span></h3></div>
-          <div class="frame-wrap">
-            <iframe id="historical-map" title="OpenHistoricalMap historical view of Manchester city centre in 1900" src="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-          </div>
-          <div class="map-card-foot"><span>OpenHistoricalMap · date-filtered community records</span><a id="historical-link" href="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
-        </article>
-        <article class="map-card">
-          <div class="map-card-head"><span class="map-index">B / NOW</span><h3>Present-day view</h3></div>
-          <div class="frame-wrap">
-            <iframe id="modern-map" title="Present-day OpenStreetMap of Manchester city centre" src="https://www.openstreetmap.org/export/embed.html?bbox=-2.2566%2C53.4743%2C-2.2286%2C53.4873&amp;layer=mapnik" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-          </div>
-          <div class="map-card-foot"><span>© OpenStreetMap contributors · ODbL</span><a id="modern-link" href="https://www.openstreetmap.org/#map=14/53.4808/-2.2426" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
-        </article>
-      </div>
-      <p class="map-note" id="map-status" role="status">Choose a viewpoint to re-centre both maps. Their panning and zooming are independent in this first version.</p>
-    </section>
-
     <section class="field-note" aria-labelledby="question-heading">
-      <div class="note-number">05 / THE EXPERIMENT</div>
-      <div><h2 id="question-heading">What changed?</h2><p>Try to spot one difference, then check the underlying historical records before treating it as fact. No detail shown—or missing—on a community map is proof by itself.</p></div>
-      <p class="test-question">Can someone discover and explain one surprising historical difference in two minutes?</p>
+      <div class="note-number">06 / THE EXPERIMENT</div>
+      <div><h2 id="question-heading">Where will you go next?</h2><p>Choose a place and year, examine the historical map, then open a source or follow a nearby connection. History is patchy: always distinguish dated evidence from general context.</p></div>
+      <p class="test-question">Can you make one surprising discovery, trace its source, and follow a connection to another place?</p>
     </section>
   </main>
 
   <footer>
     <p><strong>Source and rights:</strong> <a href="https://www.openhistoricalmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenHistoricalMap</a> (generally CC0; individual feature exceptions) · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> (ODbL). Embedded maps retain their original providers' attribution and terms.</p>
-    <p>This is a curiosity prototype, not a historical authority or an endorsed map service. Map content and coverage depend on external hosts. <a href="https://github.com/241443Mooks/Open-license-radar" target="_blank" rel="noopener noreferrer">Open Licence Radar ↗</a></p>
+    <p>Wikidata place coordinates/metadata are CC0; Wikipedia text is available under CC BY-SA with article attribution. This is a curiosity prototype, not a historical authority or an endorsed map service. Map content and coverage depend on external hosts. <a href="https://github.com/241443Mooks/Open-license-radar" target="_blank" rel="noopener noreferrer">Open Licence Radar ↗</a></p>
   </footer>
 </body>
 </html>
