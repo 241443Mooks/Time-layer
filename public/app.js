@@ -67,6 +67,39 @@ const placeTitle = document.getElementById("place-title");
 const placeHint = document.getElementById("place-hint");
 const status = document.getElementById("map-status");
 const share = document.getElementById("share");
+const mapModeButtons = {
+  historical: document.getElementById("map-mode-historical"),
+  modern: document.getElementById("map-mode-modern")
+};
+const mapPanes = {
+  historical: document.getElementById("historical-pane"),
+  modern: document.getElementById("modern-pane")
+};
+let activeMap = "historical";
+
+function setMapMode(mode) {
+  if (mode !== "historical" && mode !== "modern") return;
+  activeMap = mode;
+  for (const [key, button] of Object.entries(mapModeButtons)) {
+    const visible = key === mode;
+    button.setAttribute("aria-pressed", String(visible));
+    button.classList.toggle("is-active", visible);
+    mapPanes[key].classList.toggle("is-visible", visible);
+    mapPanes[key].setAttribute("aria-hidden", String(!visible));
+    mapPanes[key].inert = !visible;
+    // Prevent keyboard traversal of the inactive third-party embed.
+    const iframe = mapPanes[key].querySelector("iframe");
+    if (iframe) iframe.tabIndex = visible ? 0 : -1;
+    const link = mapPanes[key].querySelector("a");
+    if (link) link.tabIndex = visible ? 0 : -1;
+  }
+  status.textContent = mode === "historical"
+    ? "Viewing historical reconstruction at " + formatYear(currentYear) + ". Flip to Today to compare. Maps do not sync after panning."
+    : "Viewing today's reference map. Flip back to the reconstructed past. Maps do not sync after panning.";
+}
+Object.entries(mapModeButtons).forEach(([mode, button]) => {
+  button.addEventListener("click", () => setMapMode(mode));
+});
 
 function validYear(value) {
   if (value === null || !/^-?\d+$/.test(String(value))) return DEFAULT_YEAR;
@@ -157,9 +190,10 @@ function render({ updateModern = false, updateUrl = true } = {}) {
   modernLink.href = modernPageUrl(view);
 
   updateControls();
+  setMapMode(activeMap);
   if (updateUrl) updateAddress();
-  status.textContent = "Maps set to " + view.label + " in " + formatYear(currentYear) +
-    ". You can pan each map independently; date and feature coverage are not guaranteed.";
+  status.textContent = "Map centred on " + view.label + " for " + formatYear(currentYear) +
+    ". Flip between historical reconstruction and today; the views do not synchronise after panning.";
   window.dispatchEvent(new CustomEvent("time-layer-selection", {
     detail: {
       view: customPlace ? "world" : currentView,
