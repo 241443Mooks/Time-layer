@@ -1,0 +1,267 @@
+"use strict";
+
+// Evidence inspection is independent of map iframe navigation.
+// The OpenHistoricalMap records come from our same-origin, read-only Worker route.
+(() => {
+  const panel = document.getElementById("evidence-panel");
+  const refresh = document.getElementById("evidence-refresh");
+  const results = document.getElementById("evidence-results");
+  const status = document.getElementById("evidence-status");
+  const teaser = document.getElementById("evidence-teaser");
+  const coverage = document.getElementById("evidence-coverage");
+  const featuresList = document.getElementById("evidence-features");
+  const eventsList = document.getElementById("evidence-events");
+  const stats = {
+    count: document.getElementById("evidence-count"),
+    dated: document.getElementById("evidence-dated"),
+    compatible: document.getElementById("evidence-compatible"),
+    sourced: document.getElementById("evidence-sourced")
+  };
+
+  const cached = new Map();
+  let selected = { view: "centre", year: 1900, label: "Manchester city centre" };
+  let pending = null;
+  let requestId = 0;
+
+  function yearLabel(year) {
+    return year <= 0 ? String(1 - year) + " BCE" : String(year) + " CE";
+  }
+
+  function parseExactYear(raw) {
+    if (typeof raw !== "string") return null;
+    // No approximate, uncertain, range or EDTF value gets coerced to an exact year.
+    const match = /^(-?\d{1,4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec(raw.trim());
+    if (!match) return null;
+    if (match[2] && (Number(match[2]) < 1 || Number(match[2]) > 12)) return null;
+    if (match[3] && (Number(match[3]) < 1 || Number(match[3]) > 31)) return null;
+    return Number(match[1]);
+  }
+
+  function hasDateTag(tags) {
+    return ["start_date", "end_date", "start_date:edtf", "end_date:edtf"]
+      .some(key => Object.prototype.hasOwnProperty.call(tags, key));
+  }
+
+  function hasSource(tags) {
+    return Object.keys(tags).some(key => key === "source" || key.startsWith("source:"));
+  }
+
+  function dateState(tags, year) {
+    const start = parseExactYear(tags.start_date);
+    const end = parseExactYear(tags.end_date);
+    if (start === null && end === null) return "unresolved";
+    if (start !== null && year < start) return "before-start";
+    if (end !== null && year > end) return "after-end";
+    return "compatible";
+  }
+
+  function displayName(record) {
+    const tags = record.tags || {};
+    const name = tags["name:en"] || tags.name || tags["old_name"] ||
+      tags.historic || tags.building || tags.place || tags.railway || tags.waterway;
+    return name ? String(name).slice(0, 100) : "Unnamed mapped feature";
+  }
+
+  function recordUrl(record) {
+    return "https://www.openhistoricalmap.org/" + record.type + "/" + record.id;
+  }
+
+  function sourceUrl(tags) {
+    for (const key of ["source:url", "source:website"]) {
+      try {
+        const candidate = new URL(tags[key]);
+        if (candidate.protocol === "https:" || candidate.protocol === "http:") {
+          return candidate.href;
+        }
+      } catch (_error) { /* Source may be a citation, not a URL. */ }
+    }
+    return null;
+  }
+
+  function make(tag, className, content) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (content !== undefined) element.textContent = String(content);
+    return element;
+  }
+
+  function emptyList(target, message) {
+    target.replaceChildren();
+    target.appendChild(make("li", "evidence-empty", message));
+  }
+
+  function rawDates(tags) {
+    const dates = [];
+    for (const [field, label] of [
+      ["start_date", "Start"], ["end_date", "End"],
+      ["start_date:edtf", "Start (EDTF)"], ["end_date:edtf", "End (EDTF)"]
+    ]) {
+      if (tags[field]) dates.push(label + ": " + String(tags[field]).slice(0, 70));
+    }
+    return dates.length ? dates.join(" · ") : "No date tags";
+  }
+
+  function features(records) {
+    const year = selected.year;
+    const priority = { compatible: 0, unresolved: 1, "before-start": 2, "after-end": 2 };
+    return records.slice().sort((a, b) => {
+      const diff = priority[dateState(a.tags, year)] - priority[dateState(b.tags, year)];
+      if (diff) return diff;
+      const named = Number(Boolean(b.tags.name || b.tags["name:en"])) -
+        Number(Boolean(a.tags.name || a.tags["name:en"]));
+      if (named) return named;
+      return displayName(a).localeCompare(displayName(b));
+    }).slice(0, 8);
+  }
+
+  function renderFeature(record) {
+    const item = make("li", "evidence-feature");
+    const heading = make("div", "evidence-feature-heading");
+    const link = make("a", "", displayName(record));
+    link.href = recordUrl(record);
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    heading.appendChild(link);
+    const state = dateState(record.tags, selected.year);
+    const wording = {
+      compatible: "Dates compatible",
+      unresolved: "Date unclear",
+      "before-start": "Recorded start is later",
+      "after-end": "Recorded end is earlier"
+    };
+    heading.appendChild(make("span", "evidence-state state-" + state, wording[state]));
+    item.appendChild(heading);
+    item.appendChild(make("p", "evidence-feature-dates", rawDates(record.tags)));
+    const cited = record.tags.source;
+    if (cited) item.appendChild(make("p", "evidence-feature-source", "Source tag: " + String(cited).slice(0, 190)));
+    const src = sourceUrl(record.tags);
+    if (src) {
+      const srcLink = make("a", "evidence-source-link", "Open source reference ↗");
+      srcLink.href = src;
+      srcLink.target = "_blank";
+      srcLink.rel = "noopener noreferrer";
+      item.appendChild(srcLink);
+    }
+    return item;
+  }
+
+  function datedEvents(records) {
+    const events = [];
+    records.forEach(record => {
+      for (const [key, kind] of [["start_date", "Recorded start"], ["end_date", "Recorded end"]]) {
+        const year = parseExactYear(record.tags[key]);
+        if (year !== null && year >= -3999 && year <= 2026) {
+          events.push({ year, kind, name: displayName(record) });
+        }
+      }
+    });
+    return events.sort((a,b) => {
+      const delta = Math.abs(a.year - selected.year) - Math.abs(b.year - selected.year);
+      return delta || a.year - b.year;
+    }).slice(0, 8);
+  }
+
+  function showRecords(payload) {
+    const records = payload.elements.filter(record =>
+      record && ["node", "way", "relation"].includes(record.type) &&
+      Number.isSafeInteger(record.id) && record.tags && typeof record.tags === "object");
+    const dated = records.filter(record => hasDateTag(record.tags)).length;
+    const sourced = records.filter(record => hasSource(record.tags)).length;
+    const compatible = records.filter(record => dateState(record.tags, selected.year) === "compatible").length;
+    stats.count.textContent = String(records.length);
+    stats.dated.textContent = String(dated);
+    stats.compatible.textContent = String(compatible);
+    stats.sourced.textContent = String(sourced);
+    coverage.textContent = (payload.capped ? "The query reached its " + payload.limit + "-record limit; " : "This is a bounded local search; ") +
+      "the results do not measure historical completeness. " +
+      "Only strictly interpretable start/end years are compared; approximate or EDTF dates remain unresolved. " +
+      "A 'compatible' date does not confirm existence, location or mapping accuracy.";
+    featuresList.replaceChildren();
+    if (records.length === 0) {
+      emptyList(featuresList, "No qualifying records were returned here. This is a gap in this query, not a claim that the area was empty.");
+    } else {
+      features(records).forEach(record => featuresList.appendChild(renderFeature(record)));
+    }
+    eventsList.replaceChildren();
+    const events = datedEvents(records);
+    if (!events.length) {
+      emptyList(eventsList, "No machine-readable start or end years found in this sample.");
+    } else {
+      events.forEach(event => {
+        const li = make("li", "evidence-event");
+        const button = make("button", "evidence-jump", yearLabel(event.year));
+        button.type = "button";
+        button.addEventListener("click", () => {
+          window.dispatchEvent(new CustomEvent("time-layer-set-year", { detail: { year: event.year } }));
+        });
+        li.appendChild(button);
+        li.appendChild(make("span", "", event.kind + " · " + event.name));
+        eventsList.appendChild(li);
+      });
+    }
+    status.textContent = "Viewing " + selected.label + ", " + yearLabel(selected.year) +
+      ". " + records.length + " nearby tagged records returned" + (payload.capped ? " (limit reached)" : "") + ".";
+    teaser.textContent = records.length + " nearby records · " + yearLabel(selected.year);
+    results.hidden = false;
+  }
+
+  async function load(force = false) {
+    if (!panel.open) return;
+    const view = selected.view;
+    if (cached.has(view) && !force) {
+      showRecords(cached.get(view));
+      return;
+    }
+    if (pending) pending.abort();
+    const controller = new AbortController();
+    pending = controller;
+    const thisRequest = ++requestId;
+    refresh.disabled = true;
+    results.hidden = true;
+    status.textContent = "Checking nearby dated records around " + selected.label + "…";
+    teaser.textContent = "Checking records…";
+    try {
+      const response = await fetch("/api/evidence?view=" + encodeURIComponent(view), {
+        headers: { Accept: "application/json" },
+        signal: controller.signal
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload || !Array.isArray(payload.elements) || payload.view !== view) {
+        throw new Error((payload && payload.error) || "The evidence API returned an unexpected response.");
+      }
+      if (thisRequest !== requestId) return;
+      cached.set(view, payload);
+      showRecords(payload);
+    } catch (error) {
+      if (thisRequest !== requestId) return;
+      if (error.name === "AbortError") return;
+      status.textContent = "Could not inspect the records: " + error.message + " The historical and modern maps still work.";
+      teaser.textContent = "Evidence temporarily unavailable";
+      results.hidden = true;
+    } finally {
+      if (thisRequest === requestId) {
+        refresh.disabled = false;
+        pending = null;
+      }
+    }
+  }
+
+  panel.addEventListener("toggle", () => {
+    if (panel.open) load();
+  });
+  refresh.addEventListener("click", () => load(true));
+
+  window.addEventListener("time-layer-selection", event => {
+    const detail = event.detail;
+    if (!detail || typeof detail.view !== "string" || !Number.isInteger(detail.year)) return;
+    const previousView = selected.view;
+    selected = detail;
+    if (panel.open) {
+      if (previousView !== selected.view) load();
+      else if (cached.has(selected.view)) showRecords(cached.get(selected.view));
+      // When a request is in flight, it will use the latest year on completion.
+    } else {
+      teaser.textContent = "Check records around " + selected.label + " · " + yearLabel(selected.year);
+    }
+  });
+})();
