@@ -71,8 +71,10 @@
   panel.addEventListener("toggle", () => { if (panel.open) load(); });
   window.addEventListener("time-layer-selection", event => {
     const next = event.detail && event.detail.view;
-    activeView = next;
-    if (next !== "castlefield") {
+    const castlefield = next === "castlefield" ||
+      (next === "world" && event.detail?.placeId === "Q2308772");
+    activeView = castlefield ? "castlefield" : next;
+    if (!castlefield) {
       if (pending) pending.abort();
       panel.open = false;
       panel.hidden = true;
