@@ -11,6 +11,72 @@ const VIEWPOINTS = Object.freeze({
 const LIMIT = 150;
 // Year-specific windows reduce historical sampling bias and avoid querying the
 // Overpass service on every one-year slider movement.
+// Historic England Scheduled Monuments pilot: Castlefield only, England only.
+// List/SchedDate describes legal designation, never construction or occupation.
+const NHLE_SCHEDULED = "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/arcgis/rest/services/National_Heritage_List_for_England_NHLE_v02_VIEW/FeatureServer/6/query";
+const HERITAGE_BBOX = "-2.270,53.465,-2.245,53.487";
+const HERITAGE_LIMIT = 12;
+
+async function heritageResponse(request) {
+  if (request.method !== "GET") {
+    return json({ error: "Only GET is supported." }, 405);
+  }
+  const url = new URL(request.url);
+  if (url.searchParams.get("view") !== "castlefield") {
+    return json({ error: "Historic England heritage pilot currently covers Castlefield only." }, 400);
+  }
+  const endpoint = new URL(NHLE_SCHEDULED);
+  for (const [key, value] of Object.entries({
+    f: "json",
+    where: "1=1",
+    geometry: HERITAGE_BBOX,
+    geometryType: "esriGeometryEnvelope",
+    inSR: "4326",
+    spatialRel: "esriSpatialRelIntersects",
+    outFields: "ListEntry,Name,SchedDate,hyperlink",
+    returnGeometry: "false",
+    resultRecordCount: String(HERITAGE_LIMIT)
+  })) endpoint.searchParams.set(key, value);
+  try {
+    const response = await fetch(endpoint.toString(), {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(12000)
+    });
+    if (!response.ok) return json({ error: "Historic England service temporarily unavailable." }, 502);
+    const payload = await response.json();
+    if (!payload || !Array.isArray(payload.features) || payload.error) {
+      return json({ error: "Unexpected data from Historic England." }, 502);
+    }
+    const items = payload.features.slice(0, HERITAGE_LIMIT).map(feature => {
+      const attr = feature.attributes || {};
+      const id = Number(attr.ListEntry);
+      if (!Number.isSafeInteger(id) || id < 1) return null;
+      const value = typeof attr.Name === "string" ? attr.Name.trim() : "";
+      const name = value ? value.slice(0, 180) : "Unnamed scheduled monument";
+      const designationDate = Number.isFinite(attr.SchedDate) ?
+        new Date(attr.SchedDate).toISOString().slice(0, 10) : null;
+      return {
+        id,
+        name,
+        link: "https://historicengland.org.uk/listing/the-list/list-entry/" + id,
+        designationDate
+      };
+    }).filter(Boolean);
+    return json({
+      source: "Historic England · National Heritage List for England",
+      view: "castlefield",
+      kind: "scheduled-monument",
+      scope: "Nearby legally protected sites; no historical year matching is claimed",
+      retrieved: new Date().toISOString(),
+      items,
+      capped: Boolean(payload.exceededTransferLimit) || payload.features.length >= HERITAGE_LIMIT,
+      limit: HERITAGE_LIMIT
+    }, 200, 86400);
+  } catch (_error) {
+    return json({ error: "Historic England lookup timed out or is unavailable." }, 503);
+  }
+}
+
 const WINDOW_YEARS = 25;
 const FIRST_YEAR = -3999;
 const LAST_YEAR = 2026;
@@ -69,6 +135,9 @@ function overpassQuery(bbox, period) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/api/heritage") {
+      return heritageResponse(request);
+    }
     if (url.pathname !== "/api/evidence") {
       return env.ASSETS.fetch(request);
     }
