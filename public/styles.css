@@ -78,3 +78,77 @@
 .heritage-item a { color: #215d4e; font-size: .93rem; font-weight: 750; }
 .heritage-item p { color: #6a7770; margin: 4px 0 0; font-size: .76rem; }
 .heritage-body .heritage-attribution { border-top: 1px solid #dae1d8; padding-top: 11px; font-size: .68rem; }
+
+
+/* v0.3 — Worldwide destination search, quieter timeline, source-led discovery */
+.destination-panel .location-disclaimer{max-width:none;margin:13px 0 0;font-size:.78rem}
+.place-search-form{display:flex;gap:9px;align-items:stretch}
+.place-search-form input{flex:1;min-width:0;border:1px solid #aabeb1;border-radius:5px;background:white;color:#224139;padding:14px 15px;font-size:1rem}
+.place-search-form input::placeholder{color:#7b8980}
+.place-search-form button{border:0;border-radius:5px;background:#173a36;color:white;font-weight:750;padding:13px 22px;white-space:nowrap}
+.place-search-form button:hover{background:#2c5c4e}
+.search-status{font-size:.84rem;color:#436c5d;line-height:1.5;margin:8px 0;min-height:0}
+.search-status:empty{display:none}
+.place-search-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px;list-style:none;padding:0;margin:10px 0}
+.place-search-result{width:100%;min-height:65px;text-align:left;border:1px solid #d6e0d5;background:#f5f8f3;border-radius:5px;padding:11px 13px}
+.place-search-result:hover{border-color:#8ea99a;background:#e8f1e9}
+.place-search-result strong,.place-search-result span{display:block}
+.place-search-result strong{font-size:.92rem;color:#23483e}
+.place-search-result span{margin-top:4px;font-size:.78rem;line-height:1.4;color:#68786f}
+.destination-current{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;color:#24483d}
+.destination-current>span{font-size:.64rem;font-weight:800;letter-spacing:.12em;color:#7f8b84}
+.destination-current>strong{font:normal 1.16rem Georgia,serif;margin-right:auto}
+.example-place{background:transparent;color:#315e4e;border:1px solid #cedbd1;padding:7px 11px;border-radius:4px;font-size:.77rem;font-weight:700}
+.example-place:hover{background:#ecf3ed}
+.year-shortcuts{padding:0 0 4px;margin:12px 0 10px}
+.year-shortcuts summary{cursor:pointer;display:inline-block;border-bottom:1px solid #8da99a;color:#376552;font-weight:700;font-size:.86rem;margin-bottom:9px;list-style:none}
+.year-shortcuts summary::-webkit-details-marker{display:none}
+.year-shortcuts .year-presets{margin-bottom:8px}
+.discovery-section{margin:28px 0 18px}
+.discovery-head{margin:0 0 15px}
+.discovery-head .eyebrow{margin:0 0 6px}
+.discovery-head h2{font:normal clamp(1.65rem,3vw,2.3rem) Georgia,serif;letter-spacing:-.035em;margin:0 0 8px}
+.discovery-head .helper{max-width:820px}
+.discovery-panel{background:#fffdf9;border:1px solid #d6dcd2;border-radius:6px;padding:22px 26px}
+.discovery-status{font-size:.79rem;font-weight:600;color:#597366;line-height:1.5;margin:0 0 10px}
+.discovery-panel h3{font:normal 1.75rem Georgia,serif;color:#1e4b3b;margin:0 0 7px}
+.discovery-description{font-size:.85rem;color:#577266;margin:0 0 10px}
+.discovery-summary{font-size:.92rem;line-height:1.68;color:#394d44;max-width:920px;margin:0 0 12px}
+.discovery-links{display:flex;gap:18px;flex-wrap:wrap}
+.discovery-links a{font-size:.78rem;font-weight:750;color:#245e4e}
+.discovery-nearby{margin:17px 0 0;border-top:1px solid #dbe3db;padding:14px 0 0}
+.discovery-nearby summary{cursor:pointer;font-weight:750;color:#285947}
+.discovery-nearby summary span{font-weight:400;font-size:.81rem;color:#78867d}
+.discovery-nearby>p{font-size:.81rem;color:#617469;line-height:1.5;max-width:740px;margin:9px 0}
+.discovery-connections{list-style:none;padding:0;margin:8px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.discovery-connection{width:100%;height:100%;text-align:left;background:#f3f7f1;border:1px solid #d7e2d9;border-radius:5px;padding:11px 13px}
+.discovery-connection:hover{background:#e7f1e8;border-color:#aac4b2}
+.discovery-connection strong,.discovery-connection span{display:block}
+.discovery-connection strong{font-size:.86rem;color:#225341}
+.discovery-connection span{font-size:.76rem;color:#6a7b70;margin-top:4px;line-height:1.4}
+.discovery-empty{padding:12px;color:#758279;font-size:.85rem}
+.discovery-breadcrumbs{margin-top:20px;border-top:1px solid #dbe3db;padding-top:12px}
+.discovery-breadcrumbs>p{font-size:.65rem;letter-spacing:.12em;font-weight:800;color:#778e7c;margin:0 0 9px}
+.discovery-breadcrumbs ol{display:flex;gap:7px;flex-wrap:wrap;list-style:none;padding:0;margin:0}
+.discovery-breadcrumbs li{display:flex;align-items:center;gap:7px}
+.discovery-breadcrumbs li+li:before{content:"›";color:#8ba698}
+.discovery-breadcrumbs button{background:transparent;border:1px solid #d7e2d8;border-radius:4px;padding:6px 10px;color:#315e4d;font-size:.76rem;font-weight:700}
+.discovery-breadcrumbs button.is-current{background:#e5eee7;color:#597366}
+@media(max-width:720px){.discovery-connections{grid-template-columns:1fr}.discovery-panel{padding:18px}}
+@media(max-width:610px){
+ .hero{padding:26px 0 28px}
+ .hero h1{font-size:clamp(2.25rem,10vw,3.6rem);margin:12px 0 14px}
+ .intro{font-size:.9rem;line-height:1.5}
+ .destination-panel .panel-head{margin-bottom:15px}
+ .place-search-form input{padding:11px;font-size:.91rem}
+ .place-search-form button{padding:10px 12px;font-size:.83rem}
+ .place-search-results{grid-template-columns:1fr}
+ .destination-current>strong{flex-basis:100%;margin:0}
+ .example-place{font-size:.75rem}
+ .year-shortcuts{margin-top:10px}
+ .map-section{padding-top:4px}
+ .discovery-section{margin:24px 0 17px}
+ .discovery-panel h3{font-size:1.48rem}
+ .discovery-summary{font-size:.87rem}
+ .frame-wrap{height:360px}
+}
