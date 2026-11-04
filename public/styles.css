@@ -37,6 +37,7 @@
 .evidence-state { padding: 3px 7px; font-size: .7rem; background: #e3ede6; color: #345b49; border-radius: 4px; }
 .evidence-state.state-unresolved { background: #f2eddc; color: #806539; }
 .evidence-state.state-before-start,.evidence-state.state-after-end { background: #ececea; color: #56605a; }
+.evidence-feature-type { margin: 5px 0 0; font-size: .78rem; color: #376b58; font-weight: 700; }
 .evidence-feature-dates,.evidence-feature-source { margin: 6px 0 0; font-size: .78rem; line-height: 1.4; color: #566961; overflow-wrap: anywhere; }
 .evidence-source-link { color: #296657; display: inline-block; margin-top: 4px; font-size: .8rem; }
 .evidence-event { display: flex; align-items: baseline; gap: 10px; line-height: 1.5; font-size: .84rem; color: #52665b; }
