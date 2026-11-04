@@ -98,26 +98,26 @@
           <p class="evidence-status" id="evidence-status" role="status" aria-live="polite">Open this panel to check nearby records.</p>
           <div id="evidence-results" hidden>
             <dl class="evidence-stats">
-              <div><dt>Records returned</dt><dd id="evidence-count">—</dd></div>
+              <div><dt>Records checked (sample)</dt><dd id="evidence-count">—</dd></div>
               <div><dt>With date tags</dt><dd id="evidence-dated">—</dd></div>
-              <div><dt>Compatible with this year</dt><dd id="evidence-compatible">—</dd></div>
-              <div><dt>With source tags</dt><dd id="evidence-sourced">—</dd></div>
+              <div><dt>Matches chosen year</dt><dd id="evidence-compatible">—</dd></div>
+              <div><dt>Sources on matches</dt><dd id="evidence-sourced">—</dd></div>
             </dl>
             <p id="evidence-coverage" class="evidence-caveat"></p>
             <div class="evidence-columns">
               <section aria-labelledby="evidence-features-heading">
-                <h3 id="evidence-features-heading">Nearby feature records</h3>
-                <p class="helper">Sorted by date relevance. A compatible date does not prove that a feature existed in that year.</p>
+                <h3 id="evidence-features-heading">Features matching your year</h3>
+                <p class="helper">Only features with recorded date bounds compatible with your chosen year. These are leads, not proof of existence.</p>
                 <ul id="evidence-features" class="evidence-features"></ul>
               </section>
               <section aria-labelledby="evidence-events-heading">
-                <h3 id="evidence-events-heading">Dates in the records</h3>
-                <p class="helper">Starts and ends recorded in the returned tags. Choose a date to travel there.</p>
+                <h3 id="evidence-events-heading">Earlier recorded changes</h3>
+                <p class="helper">Recorded starts and ends up to your selected year, not future events. Jump back to investigate.</p>
                 <ol id="evidence-events" class="evidence-events"></ol>
               </section>
             </div>
           </div>
-          <p class="evidence-footnote">About a kilometre around the selected viewpoint—not the part of a map you may have panned to. Results are capped, are not a random sample and may omit undated features. An empty result, uncertain date or missing source is <strong>not evidence that nothing existed</strong>.</p>
+          <p class="evidence-footnote">About a kilometre around the selected viewpoint—not the part of a map you may have panned to. Results are capped, are not a random sample, and may omit earlier or undated features. A zero-match year means no matching evidence in this query, not proof of an empty landscape. An empty result, uncertain date or missing source is <strong>not evidence that nothing existed</strong>.</p>
         </div>
       </details>
     </section>
