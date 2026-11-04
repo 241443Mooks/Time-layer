@@ -8,6 +8,7 @@
   <title>Time-Layer · Manchester then & now</title>
   <link rel="stylesheet" href="./styles.css">
   <script src="./evidence.js" defer></script>
+  <script src="./heritage.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -117,6 +118,18 @@
               </section>
             </div>
           </div>
+          <details id="heritage-panel" class="heritage-panel" hidden>
+            <summary>
+              <span><strong>Protected heritage nearby</strong><small>Historic England · Castlefield pilot · ages not yet established</small></span>
+              <span aria-hidden="true">⌄</span>
+            </summary>
+            <div class="heritage-body">
+              <p>These are officially protected archaeological sites near Castlefield. Their <strong>legal scheduling dates are not the dates the monuments were built</strong>; they are research leads, not year-matched historical features.</p>
+              <p id="heritage-status" role="status" aria-live="polite">Open to look up official monument records.</p>
+              <ul id="heritage-items" class="heritage-items"></ul>
+              <p class="heritage-attribution">Data: © Historic England 2026. Contains Ordnance Survey data © Crown copyright and database right 2026. Reused under the Open Government Licence.</p>
+            </div>
+          </details>
           <p class="evidence-footnote">About a kilometre around the selected viewpoint—not the part of a map you may have panned to. Results are capped, are not a random sample, and may omit earlier or undated features. A zero-match year means no matching evidence in this query, not proof of an empty landscape. An empty result, uncertain date or missing source is <strong>not evidence that nothing existed</strong>.</p>
         </div>
       </details>
