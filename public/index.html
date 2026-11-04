@@ -56,18 +56,27 @@
         </div>
         <div class="year-readout" aria-live="polite"><span>THE YEAR</span><strong id="year-output">1900</strong></div>
       </div>
-      <label class="sr-only" for="year">Historical map year</label>
-      <input id="year" type="range" min="1600" max="2026" step="1" value="1900" aria-describedby="year-help">
-      <div class="range-ends"><span>1600</span><span>2026</span></div>
-      <div class="year-presets" role="group" aria-label="Jump to a year">
-        <button type="button" data-year="1800">1800</button>
-        <button type="button" data-year="1850">1850</button>
-        <button type="button" data-year="1900">1900</button>
-        <button type="button" data-year="1950">1950</button>
-        <button type="button" data-year="2000">2000</button>
-        <button type="button" data-year="2020">2020</button>
+      <div class="era-options" role="group" aria-label="Choose a historical period">
+        <button type="button" data-era="ancient" aria-pressed="false">Ancient BCE</button>
+        <button type="button" data-era="early" aria-pressed="false">1–999 CE</button>
+        <button type="button" data-era="medieval" aria-pressed="false">1000–1599 CE</button>
+        <button type="button" data-era="recent" class="is-selected" aria-pressed="true">1600 onwards</button>
       </div>
-      <p class="helper" id="year-help">Drag the slider, then release to change the historical map. Historical records may be incomplete or imprecise.</p>
+      <label class="sr-only" for="year">Historical map year within the selected period</label>
+      <input id="year" type="range" min="1600" max="2026" step="1" value="1900" aria-describedby="year-help">
+      <div class="range-ends"><span id="range-start">1600 CE</span><span id="range-end">2026 CE</span></div>
+      <div class="year-presets" role="group" aria-label="Jump to a historical year">
+        <button type="button" data-year="-3999">4000 BCE</button>
+        <button type="button" data-year="-999">1000 BCE</button>
+        <button type="button" data-year="79">79 CE</button>
+        <button type="button" data-year="410">410 CE</button>
+        <button type="button" data-year="1066">1066</button>
+        <button type="button" data-year="1400">1400</button>
+        <button type="button" data-year="1600">1600</button>
+        <button type="button" data-year="1900">1900</button>
+        <button type="button" data-year="2000">2000</button>
+      </div>
+      <p class="helper" id="year-help">Choose a period, then drag and release the slider. BCE years are displayed without a year zero. Earlier dates are supported by OpenHistoricalMap, but coverage in Manchester may be sparse or absent.</p>
     </section>
 
     <section class="map-section" aria-label="Compare maps">
