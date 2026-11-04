@@ -105,6 +105,14 @@
         nearby.open = false;
       });
       item.appendChild(button);
+      if (place.kind === "source-backed-lead" &&
+          place.evidenceUrl === "https://en.wikipedia.org/wiki/Castlefield") {
+        const reference = make("a", "discovery-lead-source", "Why is this connected? View the source ↗");
+        reference.href = place.evidenceUrl;
+        reference.target = "_blank";
+        reference.rel = "noopener noreferrer";
+        item.appendChild(reference);
+      }
       connections.appendChild(item);
     }
   }
