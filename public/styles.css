@@ -62,3 +62,19 @@
   .evidence-stats dd { font-size: 1.65rem; }
   .evidence-features { max-height: 260px; }
 }
+
+/* Optional Historic England pilot: no extra vertical space until opened. */
+.heritage-panel { margin-top: 22px; background: #f4f6f1; border: 1px solid #d9e1d6; border-radius: 5px; }
+.heritage-panel[hidden] { display: none; }
+.heritage-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; padding: 14px 17px; list-style: none; }
+.heritage-panel summary::-webkit-details-marker { display: none; }
+.heritage-panel summary strong { display: block; font: 400 1.15rem Georgia,serif; color: #25493e; }
+.heritage-panel summary small { display: block; margin-top: 4px; font-size: .75rem; color: #66776c; line-height: 1.4; }
+.heritage-panel[open] summary { border-bottom: 1px solid #dbe2d9; }
+.heritage-body { padding: 14px 17px 17px; }
+.heritage-body > p { font-size: .82rem; line-height: 1.55; color: #53665d; margin: 0 0 12px; }
+.heritage-items { margin: 0; padding: 0; list-style: none; }
+.heritage-item { border-top: 1px solid #d8e1d9; padding: 11px 0; }
+.heritage-item a { color: #215d4e; font-size: .93rem; font-weight: 750; }
+.heritage-item p { color: #6a7770; margin: 4px 0 0; font-size: .76rem; }
+.heritage-body .heritage-attribution { border-top: 1px solid #dae1d8; padding-top: 11px; font-size: .68rem; }
