@@ -12,7 +12,7 @@ A small, source-led time traveller's atlas: **choose a place, choose a year, com
 
 1. Search for a place **worldwide** using Wikidata, select an item with usable coordinates, or try Castlefield and Manchester.
 2. Choose a year between approximately 4000 BCE and 2026 CE.
-3. Flip between a date-filtered OpenHistoricalMap reconstruction and present-day OpenStreetMap **in one viewport**, centred on the selected location. They do not remain aligned after independent dragging.
+3. Flip between a date-filtered OpenHistoricalMap reconstruction and present-day OpenStreetMap **in one viewport**, centred on the selected location. The regular embed flip does not track independent dragging; the opt-in **Keep views aligned (BETA)** uses one MapLibre camera so switching past/today preserves your exact pan and zoom.
 4. Read Wikidata/Wikipedia general context, then explore an optional **linked-place discovery trail**. Followed places keep the same year; breadcrumb buttons take you back.
 5. Inspect the separate, collapsed **year-matched OHM evidence panel**; Castlefield also offers the official Historic England Scheduled Monuments pilot.
 
@@ -66,6 +66,22 @@ Wikimedia has [2026 API usage limits](https://www.mediawiki.org/wiki/Wikimedia_A
 - A first **The National Archives Discovery API** research test returned 51 catalogue matches for `Castlefield Manchester`, including photograph catalogue entries from 1985/1986 and an 1854 engineering letter held by Bolton Archives. This is a **tested future connector, not currently rendered in Time-Layer**. Catalogue items describe records, not necessarily digitised images or documents; item URLs/rights need verification.
 
 The evolving [discovery-warren design and tested source inventory](docs/discovery-warren.md) explains which relationships should be visible, the required source/date/licence fields, and the recommended small pilot for archaeological and archival trails.
+
+### Version 0.5 — True shared camera (opt-in beta)
+
+**Owner feedback:** the single-map flip felt good on a phone, but the two embedded maps drift apart when panned. The embedded historical map and the embedded modern map belong to different external websites: they cannot be reliably synchronized through Time-Layer's parent page.
+
+Added an optional **Keep views aligned · BETA** switch just above the map. When enabled:
+
+- A **single MapLibre GL JS 5.6.0 instance** loads OpenHistoricalMap's official [historical stylesheet](https://www.openhistoricalmap.org/map-styles/main/main.json) and the [MapLibre GL Dates 2.0.0 plugin](https://github.com/OpenHistoricalMap/maplibre-gl-dates). The chosen year filters the vector historical features.
+- A present-day OpenStreetMap **raster layer** is drawn in the same MapLibre map; **Past / Today** switches this layer's visibility. Both views share the same centre, zoom, bearing and pitch because they are actually one map, not two independently hosted iframes. Panning, zooming, or rotating the map then flipping preserves the camera.
+- Changing the selected **year** updates the date filter **without re-centring**. Choosing a **different place** re-centres the shared map. A shareable `?aligned=1` query parameter opts into the experiment.
+- The existing iframe flip is **preserved as a fallback**. If the browser lacks WebGL, CDN dependencies fail, or the shared map does not finish loading within 18 seconds, the toggle switches off and the original maps reappear.
+- **No historical scans are used.** The past layer remains an OHM reconstruction. The map is **not yet tested on a real mobile browser**. The MapLibre toggle, one-camera switching, date update and fallback were checked with a mocked map instance; presence of the new toggle and OHM style endpoint were confirmed live, but **actual third-party tile rendering has not yet been confirmed**.
+
+**Operating caution:** The beta modern layer requests `https://tile.openstreetmap.org/` directly. This is appropriate only for limited respectful experiments under the [OSMF tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Before scaling publicly, switch to an explicitly licensed tile provider or compliant hosting and verify caching, attribution, service policies and performance. The third-party script dependencies are currently pinned on jsDelivr; plan version upgrades and a CSP/reliability review before wider release.
+
+**Suggested test:** Open [Castlefield in 79 CE with alignment on](https://time-layer.corneliuslobster.workers.dev/?place=Q2308772&year=79&aligned=1), move/zoom the map, press **Today**, then **Past**. The exact map position should remain unchanged. Change the year; your position should stay fixed. Switch **Keep views aligned** off to compare with the original embeds.
 
 ### Intentional limits
 
