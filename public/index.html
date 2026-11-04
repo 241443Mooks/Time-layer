@@ -99,23 +99,31 @@
         <button type="button" id="share" class="share-button">Copy this view ↗</button>
       </div>
       <p id="place-hint" class="place-hint">Look for streets, boundaries and buildings that appear, disappear or change.</p>
-      <div class="maps">
-        <article class="map-card">
-          <div class="map-card-head"><span class="map-index">A / THEN</span><h3>Historical view <span id="map-year">1900</span></h3></div>
+      <div class="map-switcher" role="group" aria-label="Switch map view">
+        <button type="button" id="map-mode-historical" class="map-mode is-active" aria-pressed="true" aria-controls="historical-pane">Past · reconstruction</button>
+        <button type="button" id="map-mode-modern" class="map-mode" aria-pressed="false" aria-controls="modern-pane">Today</button>
+      </div>
+      <div class="map-stage" id="map-stage">
+        <article class="map-pane is-visible" id="historical-pane" aria-label="Reconstructed historical map">
+          <div class="map-pane-head"><span class="map-index">HISTORICAL RECONSTRUCTION</span><strong id="map-year">1900</strong></div>
           <div class="frame-wrap">
             <iframe id="historical-map" title="OpenHistoricalMap historical view of Manchester city centre in 1900" src="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" referrerpolicy="strict-origin-when-cross-origin"></iframe>
           </div>
-          <div class="map-card-foot"><span>OpenHistoricalMap · date-filtered community records</span><a id="historical-link" href="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
+          <div class="map-card-foot"><span>OpenHistoricalMap · reconstructed features, not a map drawn in this year</span><a id="historical-link" href="https://embed.openhistoricalmap.org/#map=14/53.4808/-2.2426&amp;date=1900&amp;layer=O" target="_blank" rel="noopener noreferrer">Open full map ↗</a></div>
         </article>
-        <article class="map-card">
-          <div class="map-card-head"><span class="map-index">B / NOW</span><h3>Present-day view</h3></div>
+        <article class="map-pane" id="modern-pane" aria-label="Modern reference map" aria-hidden="true" inert>
+          <div class="map-pane-head"><span class="map-index">PRESENT-DAY REFERENCE</span><strong>Today</strong></div>
           <div class="frame-wrap">
-            <iframe id="modern-map" title="Present-day OpenStreetMap of Manchester city centre" src="https://www.openstreetmap.org/export/embed.html?bbox=-2.2566%2C53.4743%2C-2.2286%2C53.4873&amp;layer=mapnik" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <iframe id="modern-map" title="Present-day OpenStreetMap of Manchester city centre" src="https://www.openstreetmap.org/export/embed.html?bbox=-2.2566%2C53.4743%2C-2.2286%2C53.4873&amp;layer=mapnik" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1"></iframe>
           </div>
-          <div class="map-card-foot"><span>© OpenStreetMap contributors · ODbL</span><a id="modern-link" href="https://www.openstreetmap.org/#map=14/53.4808/-2.2426" target="_blank" rel="noopener noreferrer">Open larger ↗</a></div>
+          <div class="map-card-foot"><span>© OpenStreetMap contributors · ODbL</span><a id="modern-link" href="https://www.openstreetmap.org/#map=14/53.4808/-2.2426" target="_blank" rel="noopener noreferrer" tabindex="-1">Open full map ↗</a></div>
         </article>
       </div>
-      <p class="map-note" id="map-status" role="status">Choose a viewpoint to re-centre both maps. Their panning and zooming are independent in this first version.</p>
+      <details class="archive-peek">
+        <summary><span class="archive-peek-icon" aria-hidden="true">✦</span> Want an actual old map?</summary>
+        <p>Our historical view is a reconstruction. Digitised maps are different: they show the cartography people actually drew. Explore <a href="https://maps.nls.uk/geo/explore/" target="_blank" rel="noopener noreferrer">NLS georeferenced maps ↗</a> (strong Great Britain coverage), or <a href="https://www.davidrumsey.com/view" target="_blank" rel="noopener noreferrer">David Rumsey’s historical map collection ↗</a> (international). Dates, rights and geographical availability vary; neither archive is yet embedded in this viewer.</p>
+      </details>
+      <p class="map-note" id="map-status" role="status">Flip between past and present at this chosen location. These embedded maps do not yet synchronise if you drag either one.</p>
     </section>
 
     <section id="discovery" class="discovery-section" aria-labelledby="discover-heading">
