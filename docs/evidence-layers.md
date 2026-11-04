@@ -5,14 +5,14 @@
 ## Layer 1 — OpenHistoricalMap (implemented)
 
 - Scope: global community-built historical geographical features with optional start/end dates, [EDTF uncertainty](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Tags/Key/start_date), and source tags.
-- Current prototype queries a **bounded fixed box**, returns up to 150 records, and filters the *display* locally to the chosen year.
+- Now queries a **bounded fixed box for a 25-year window** via OHM Overpass, filtering before the 150-record cap. The browser then filters to the specific selected year. Up to twelve viewpoint-and-window responses are cached client-side. This improves representation of earlier history but does not guarantee completeness or remove the cap.
 - **Main list:** requires an interpretable `start_date` no later than the selected year and, where a parseable `end_date` exists, requires that the selected year is no later than that end. Future/expired records are hidden. End-only, unparseable/EDTF-only and undated records are **unresolved**, not assumed to have been present. A missing end date does not prove persistence, so all matches are described as *date-compatible*, never as historical facts.
 - **Earlier recorded changes:** only start/end dates up to the chosen year; later dates are hidden. This is for exploration, **not a comprehensive historical timeline**.
 - **Data completeness:** a missing match may reflect the query cap, incomplete historic mapping, an uncertain/unparseable date, or missing data—not an empty landscape.
 - **Quality follow-up:** understand [OHM EDTF date conventions](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Dates_and_Times), bias of the first 150 records, and whether a *date-aware server query* would reduce false zero-match impressions while keeping the slider responsive.
 - Source: [OHM Overpass](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass).
 
-## Layer 2 — Historic England (next focused experiment; NOT integrated yet)
+## Layer 2 — Historic England (Castlefield Scheduled Monuments pilot LIVE)
 
 The [National Heritage List for England](https://historicengland.org.uk/listing/the-list/data-downloads/) (NHLE) provides a high-value, **England-only** additional source. It can identify heritage sites, add statutory designations and source links, and offer **places to research** when OpenHistoricalMap has sparse coverage.
 
@@ -31,12 +31,12 @@ A **listing date (`ListDate`)** or **scheduling date (`SchedDate`)** records whe
 
 Until there is a trustworthy period-of-origin or site chronology, Historic England records should appear in a separately labelled **“Protected heritage nearby — age not yet established”** disclosure. These are potential leads for historical investigation, **not a list of structures present in the selected year**. For ancient years, explain the difference especially clearly.
 
-### Next 1–2-day test
+### First 1–2-day test and verification
 
-1. Query just the **Scheduled Monuments** layer around Castlefield using a small bounding geometry and return a handful of records with official entry links.
-2. Check response geometry, coordinate reference system (**source EPSG:27700**, client map WGS84), rate limits, field values and how much location ambiguity exists. Use bounded server-side calls with a time-out and caching.
-3. Show results in a **secondary nested disclosure**, intentionally separate from date-compatible OHM records. Do **not** display all protected sites by default on mobile.
-4. For one Roman site, follow the official entry to extract independently supported historical period text and a traceable citation. **Do not infer age from designation timestamps.**
+1. **Done:** query just Scheduled Monuments layer 6 around Castlefield. Official API returned [Remains of eastern wall of the Roman fort — 1001953](https://historicengland.org.uk/listing/the-list/list-entry/1001953). Public /api/heritage?view=castlefield route confirmed live; source provided no `SchedDate`.
+2. **Partially done:** the spatial query uses WGS84 (`inSR=4326`) against the API's native EPSG:27700 data and requests attributes only; response verified. It has a fixed Castlefield envelope, 12-record limit, 12-second timeout and public 24-hour cache. Geographic precision and production reliability still need more testing.
+3. **Done:** source commits add a second nested `Protected heritage nearby` disclosure inside the main evidence panel, collapsed by default and visible only for Castlefield. It fetches on demand; the whole evidence panel is itself collapsed by default on mobile.
+4. **Next:** extract independently supported site chronology from the official entry for the Roman fort wall, with a traceable citation. Do not infer age from scheduling/designation dates.
 5. Test on 79 CE and 1000 BCE. A user must be able to distinguish (a) *features recorded for this year*, (b) *nearby heritage worth researching*, and (c) *absence of evidence in the selected data*.
 
 **Licensing:** NHLE geospatial data is provided under the [Open Government Licence](https://historicengland.org.uk/listing/the-list/data-downloads/). Follow the published Historic England and Ordnance Survey / Crown copyright attribution requirements. This does **not** grant blanket reuse rights for every photo, document, third-party map or linked record.
@@ -49,4 +49,4 @@ Prefer one verified source that materially addresses a specific gap over adding 
 
 Current panel is collapsed by default. Keep the map and year selector central; use short in-panel summaries plus optional details. Defer larger layout redesign until the new layers are useful and have been tested on real mobile devices.
 
-**Status:** OHM year filter committed; Historic England adapter not written or deployed. Keep that distinction in the app and radar.
+**Status (4 November 2026):** OHM period-window query verified in production (e.g. 1900 around Castlefield); Historic England Scheduled Monuments API verified around Castlefield (one official Roman fort wall entry). Both routes and the optional panel are committed; broader venue or worldwide coverage is not claimed. Frontend hands-on mobile interaction still needs a real-device check.
