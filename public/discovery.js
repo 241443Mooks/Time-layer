@@ -14,6 +14,8 @@
   const summary = document.getElementById("discovery-summary");
   const wikipedia = document.getElementById("discovery-wikipedia");
   const wikidata = document.getElementById("discovery-wikidata");
+  const featuredTrail = document.getElementById("featured-trail");
+  const featuredTrailContent = document.getElementById("featured-trail-content");
   const nearby = document.getElementById("discovery-nearby");
   const connections = document.getElementById("discovery-connections");
   const connectionCount = document.getElementById("discovery-connection-count");
@@ -76,6 +78,29 @@
     renderTrail();
   }
 
+  function renderFeatured(leads) {
+    featuredTrailContent.replaceChildren();
+    const lead = Array.isArray(leads) ? leads.find(item =>
+      safePlace(item) && item.id !== currentId && item.kind === "source-backed-lead") : null;
+    featuredTrail.hidden = !lead;
+    if (!lead) return;
+    const button = make("button", "featured-trail-button");
+    button.type = "button";
+    button.appendChild(make("strong", "", "Explore " + lead.label));
+    button.appendChild(make("span", "", lead.description || "A documented connection worth investigating."));
+    button.addEventListener("click", () => navigate(lead));
+    featuredTrailContent.appendChild(button);
+    if (lead.evidenceUrl === "https://en.wikipedia.org/wiki/Castlefield") {
+      const link = make("a", "featured-trail-source", "Why are these places connected? Read the source ↗");
+      link.href = lead.evidenceUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      featuredTrailContent.appendChild(link);
+    }
+    featuredTrailContent.appendChild(make("p", "featured-trail-caveat",
+      "A documented link, not a claim that the feature existed in your selected year."));
+  }
+
   function renderConnections(list) {
     connections.replaceChildren();
     const seen = new Set();
@@ -126,7 +151,8 @@
       "No short English Wikipedia introduction is available for this place. Its Wikidata record may still have useful references.";
     setLink(wikidata, place.wikidataUrl);
     setLink(wikipedia, data.summary?.link);
-    renderConnections([...(data.featured || []), ...(data.connections || [])]);
+    renderFeatured(data.featured);
+    renderConnections(data.connections);
     discoveryStatus.textContent = "General historical and geographical context from Wikimedia. " +
       "These links are not filtered to your selected year." +
       (data.warnings?.length ? " Some sources are temporarily unavailable." : "");
@@ -140,6 +166,8 @@
     description.textContent = "";
     connections.replaceChildren();
     connectionCount.textContent = "";
+    featuredTrail.hidden = true;
+    featuredTrailContent.replaceChildren();
     setLink(wikidata, null);
     setLink(wikipedia, null);
     try {
