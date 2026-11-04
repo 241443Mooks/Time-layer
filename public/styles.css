@@ -155,3 +155,31 @@
 .discovery-researched{display:block;color:#74552f;font-size:.73rem;font-weight:750;font-style:normal;margin:5px 0 3px}
 .discovery-lead-source{display:inline-block;font-size:.73rem;color:#346d57;margin:6px 8px 8px;text-decoration:underline;text-underline-offset:3px}
 
+
+/* v0.4: one map viewport, two accessible, reversible states. */
+.map-switcher{display:inline-flex;align-items:stretch;gap:5px;background:#e6ebe3;padding:5px;border-radius:7px;margin:2px 0 13px;width:max-content;max-width:100%}
+.map-mode{border:1px solid transparent;border-radius:5px;background:transparent;color:#416255;font-weight:750;font-size:.86rem;padding:10px 18px;min-height:42px;white-space:nowrap}
+.map-mode:hover{background:#f5f8f2}
+.map-mode.is-active{background:#173a36;border-color:#173a36;color:#fff}
+.map-stage{display:grid;grid-template-columns:minmax(0,1fr);background:#fffdf9;border:1px solid #d4d8d0;border-radius:6px;overflow:hidden}
+.map-pane{grid-row:1;grid-column:1;min-width:0;visibility:hidden;pointer-events:none;z-index:0}
+.map-pane.is-visible{visibility:visible;pointer-events:auto;z-index:1}
+.map-pane-head{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f6f7f2;border-bottom:1px solid #e1e6dd;padding:10px 18px;color:#244a3c}
+.map-pane-head strong{font:normal 1.17rem Georgia,serif}
+.map-stage .frame-wrap{height:clamp(340px,52vw,570px)}
+.map-stage .map-card-foot{background:#fffdf9}
+.archive-peek{border:1px solid #dce4d8;background:#f0f4ec;border-radius:5px;margin:12px 0 6px}
+.archive-peek summary{cursor:pointer;padding:12px 15px;font-size:.82rem;font-weight:750;color:#335c4c}
+.archive-peek-icon{color:#ad7348;font-size:1rem;margin-right:7px}
+.archive-peek p{margin:0;padding:0 15px 14px;line-height:1.55;font-size:.82rem;color:#556b5e}
+.archive-peek a{color:#20624d;text-decoration:underline;font-weight:650}
+@media(max-width:610px){
+ .map-switcher{display:flex;width:100%;gap:4px}
+ .map-mode{flex:1;white-space:normal;font-size:.85rem;padding:10px 12px}
+ .map-stage .frame-wrap{height:350px}
+ .map-pane-head{padding:9px 12px}
+ .map-pane-head .map-index{font-size:.59rem;letter-spacing:.08em}
+ .map-stage .map-card-foot{padding:10px 11px;gap:7px;line-height:1.45}
+ .map-stage .map-card-foot a{font-size:.74rem}
+}
+@media(prefers-reduced-motion:reduce){.map-mode{transition:none}}
