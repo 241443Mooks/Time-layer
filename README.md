@@ -30,9 +30,9 @@ Start at Manchester city centre. Choose among five *viewpoints to investigate* (
 
 - Calls a same-origin **`GET /api/evidence?view=centre`** Worker endpoint, which performs a bounded, read-only query to [OpenHistoricalMap Overpass](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass). This avoids historical browser CORS difficulties; the public service may still time out or reject requests.
 - Queries a fixed ~1 km area around the **chosen Manchester preset**, not the part of either map that has been panned. Returns up to **150** dated or named historic map features. This is a **biased limited selection**, never a measure of all mapped features or completeness.
-- Shows records returned, records with date tags, records whose **interpretable start/end year bounds are compatible** with the selected year, and records with source tags. The presence of a source tag does not independently establish reliability.
+- Shows total records checked, records with date tags, records whose **interpretable start/end year bounds are compatible** with the selected year, and source tags **among matching records**. The main feature list contains **only date-compatible results**, not later structures (e.g. Ardwick Bridge in a 1000 BCE view). Nonmatching/undated features are not silently presented as present in that year. The presence of a source tag does not independently establish reliability.
 - Offers original-feature links and source links where tags include a valid URL; displays date text verbatim and treats unparseable/approximate/EDTF expressions as **unresolved**, not invented precise events.
-- Shows up to eight nearby record starts/ends you can jump to. These are dates **attached to returned features**, not a comprehensive historical-events timeline.
+- Shows up to eight nearby record starts/ends **on or before the selected year** that you can jump to. Later dates are suppressed. These are dates **attached to returned features**, not a comprehensive historical-events timeline.
 - Caches the bounded records per viewpoint in the browser session; moving the year slider updates the panel locally with no new API request. Press **Check records again** to refresh.
 - Handles zero results and failed/timed-out queries explicitly. The maps continue working when the evidence service is unavailable. On phones, the panel is collapsed until requested; a fuller mobile layout redesign is deferred.
 
@@ -75,6 +75,14 @@ Or use Cloudflare's GitHub-connected deployment with **Build command: none**, **
 2. Find **five specific OpenHistoricalMap features** with verifiable historical time bounds and original-feature links; check any `license=*` tags before describing/reusing them.
 3. If the idea proves interesting, replace the iframes with directly controlled [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) maps and the [OHM date-filtering plugin](https://github.com/OpenHistoricalMap/maplibre-gl-dates) for truly synchronised viewports and immediate date updates.
 4. Add a small evidence trail for each verified historical discovery: feature ID, date bounds, provenance, rights, and limitations.
+
+## Next evidence layer: one official heritage source
+
+The next proposed addition is **Historic England's National Heritage List for England**, beginning with Scheduled Monuments (Roman remains, archaeological sites, castles and other protected locations), followed only if useful by listed-building points. The data is official, England-only and licensed under the OGL, with required Historic England and Crown/OS attribution.
+
+Crucially, legal **scheduling/listing dates are not construction or occupation dates**. The heritage layer must be explicitly separated from records compatible with a chosen year until each site's historical period can be independently established.
+
+See [the evidence-layer research and staged implementation plan](docs/evidence-layers.md). **This second API is researched, not yet integrated.** The mobile evidence panel stays collapsed while we test usefulness and reduce scrolling.
 
 ## Rights and operating costs
 
