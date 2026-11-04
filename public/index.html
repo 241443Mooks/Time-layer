@@ -7,6 +7,7 @@
   <meta name="description" content="Explore Manchester then and now, with historical mapping across time.">
   <title>Time-Layer · Manchester then & now</title>
   <link rel="stylesheet" href="./styles.css">
+  <script src="./evidence.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -26,7 +27,7 @@
         <h1>Every street has<br><em>more than one story.</em></h1>
         <p class="intro">Two views of the same place. One is Manchester today. The other is what contributors have mapped at a chosen point in history. Move through time and see what catches your eye.</p>
       </div>
-      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.1</strong></div>
+      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.2</strong></div>
     </div>
   </header>
 
@@ -79,10 +80,52 @@
       <p class="helper" id="year-help">Choose a period, then drag and release the slider. BCE years are displayed without a year zero. Earlier dates are supported by OpenHistoricalMap, but coverage in Manchester may be sparse or absent.</p>
     </section>
 
+    <section class="evidence-section" aria-label="Historical evidence">
+      <details id="evidence-panel" class="evidence-panel">
+        <summary>
+          <span class="evidence-summary-label">
+            <span class="eyebrow dark">03 / Historical evidence</span>
+            <strong>What do we know here?</strong>
+            <small id="evidence-teaser">Check nearby recorded features for the year you chose</small>
+          </span>
+          <span class="evidence-chevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="evidence-body">
+          <div class="evidence-intro">
+            <p>Explore what OpenHistoricalMap contributors have recorded near this viewpoint. This does <strong>not</strong> measure how complete the historical map is.</p>
+            <button type="button" class="evidence-refresh" id="evidence-refresh">Check records again</button>
+          </div>
+          <p class="evidence-status" id="evidence-status" role="status" aria-live="polite">Open this panel to check nearby records.</p>
+          <div id="evidence-results" hidden>
+            <dl class="evidence-stats">
+              <div><dt>Records returned</dt><dd id="evidence-count">—</dd></div>
+              <div><dt>With date tags</dt><dd id="evidence-dated">—</dd></div>
+              <div><dt>Compatible with this year</dt><dd id="evidence-compatible">—</dd></div>
+              <div><dt>With source tags</dt><dd id="evidence-sourced">—</dd></div>
+            </dl>
+            <p id="evidence-coverage" class="evidence-caveat"></p>
+            <div class="evidence-columns">
+              <section aria-labelledby="evidence-features-heading">
+                <h3 id="evidence-features-heading">Nearby feature records</h3>
+                <p class="helper">Sorted by date relevance. A compatible date does not prove that a feature existed in that year.</p>
+                <ul id="evidence-features" class="evidence-features"></ul>
+              </section>
+              <section aria-labelledby="evidence-events-heading">
+                <h3 id="evidence-events-heading">Dates in the records</h3>
+                <p class="helper">Starts and ends recorded in the returned tags. Choose a date to travel there.</p>
+                <ol id="evidence-events" class="evidence-events"></ol>
+              </section>
+            </div>
+          </div>
+          <p class="evidence-footnote">About a kilometre around the selected viewpoint—not the part of a map you may have panned to. Results are capped, are not a random sample and may omit undated features. An empty result, uncertain date or missing source is <strong>not evidence that nothing existed</strong>.</p>
+        </div>
+      </details>
+    </section>
+
     <section class="map-section" aria-label="Compare maps">
       <div class="map-head">
         <div>
-          <p class="eyebrow dark">03 / Look closer</p>
+          <p class="eyebrow dark">04 / Look closer</p>
           <h2 id="place-title">Manchester city centre</h2>
         </div>
         <button type="button" id="share" class="share-button">Copy this view ↗</button>
@@ -108,7 +151,7 @@
     </section>
 
     <section class="field-note" aria-labelledby="question-heading">
-      <div class="note-number">04 / THE EXPERIMENT</div>
+      <div class="note-number">05 / THE EXPERIMENT</div>
       <div><h2 id="question-heading">What changed?</h2><p>Try to spot one difference, then check the underlying historical records before treating it as fact. No detail shown—or missing—on a community map is proof by itself.</p></div>
       <p class="test-question">Can someone discover and explain one surprising historical difference in two minutes?</p>
     </section>
