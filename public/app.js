@@ -40,6 +40,19 @@ function historicalDate(year) {
 }
 let currentView = "centre";
 let currentYear = DEFAULT_YEAR;
+let customPlace = null;
+const selectedPlaceName = document.getElementById("selected-place");
+
+function currentMapView() {
+  return customPlace || VIEWS[currentView];
+}
+
+function currentPlaceId() {
+  if (customPlace) return customPlace.id;
+  if (currentView === "centre") return "Q18125";
+  if (currentView === "castlefield") return "Q2308772";
+  return null;
+}
 
 const historyFrame = document.getElementById("historical-map");
 const modernFrame = document.getElementById("modern-map");
@@ -87,13 +100,19 @@ function modernPageUrl(view) {
 
 function updateAddress() {
   const url = new URL(window.location.href);
-  url.searchParams.set("view", currentView);
+  if (customPlace) {
+    url.searchParams.set("place", customPlace.id);
+    url.searchParams.delete("view");
+  } else {
+    url.searchParams.set("view", currentView);
+    url.searchParams.delete("place");
+  }
   url.searchParams.set("year", String(currentYear));
   window.history.replaceState({}, "", url);
 }
 
 function updateControls() {
-  const view = VIEWS[currentView];
+  const view = currentMapView();
   const eraKey = eraForYear(currentYear);
   const era = ERAS[eraKey];
   range.min = String(era.min);
@@ -109,7 +128,8 @@ function updateControls() {
     button.setAttribute("aria-pressed", String(active));
   });
   placeTitle.textContent = view.label;
-  placeHint.textContent = view.hint;
+  placeHint.textContent = view.hint || "Compare the mapped past with modern streets. Location and date precision vary.";
+  selectedPlaceName.textContent = view.label;
 
   document.querySelectorAll("[data-view]").forEach(button => {
     const active = button.dataset.view === currentView;
@@ -124,7 +144,7 @@ function updateControls() {
 }
 
 function render({ updateModern = false, updateUrl = true } = {}) {
-  const view = VIEWS[currentView];
+  const view = currentMapView();
   const historical = historyUrl(view, currentYear);
   historyFrame.src = historical;
   historicalLink.href = historical;
@@ -141,7 +161,14 @@ function render({ updateModern = false, updateUrl = true } = {}) {
   status.textContent = "Maps set to " + view.label + " in " + formatYear(currentYear) +
     ". You can pan each map independently; date and feature coverage are not guaranteed.";
   window.dispatchEvent(new CustomEvent("time-layer-selection", {
-    detail: { view: currentView, year: currentYear, label: view.label }
+    detail: {
+      view: customPlace ? "world" : currentView,
+      placeId: currentPlaceId(),
+      lat: view.lat,
+      lng: view.lng,
+      year: currentYear,
+      label: view.label
+    }
   }));
 }
 
@@ -149,6 +176,23 @@ function chooseView(key) {
   const next = validView(key);
   if (next === currentView) return;
   currentView = next;
+  customPlace = null;
+  render({ updateModern: true });
+}
+
+function choosePlace(place) {
+  if (!place || !/^Q[1-9]\d{0,11}$/.test(place.id) ||
+      !Number.isFinite(place.lat) || !Number.isFinite(place.lng) ||
+      place.lat < -85 || place.lat > 85 || place.lng < -180 || place.lng > 180) return;
+  customPlace = {
+    id: place.id,
+    label: String(place.label || place.id).slice(0, 100),
+    lat: Number(place.lat),
+    lng: Number(place.lng),
+    zoom: 14,
+    hint: "Explore source-backed clues about this place; Wikidata coordinates are modern reference points."
+  };
+  currentView = "world";
   render({ updateModern: true });
 }
 
@@ -206,10 +250,21 @@ share.addEventListener("click", async () => {
   }
 });
 
+window.addEventListener("time-layer-explore-place", event => {
+  choosePlace(event.detail);
+});
+
 window.addEventListener("time-layer-set-year", event => {
   const year = event.detail && event.detail.year;
   if (Number.isInteger(year)) chooseYear(year);
 });
 
-window.addEventListener("popstate", initialiseFromAddress);
+window.addEventListener("popstate", () => {
+  initialiseFromAddress();
+  const params = new URLSearchParams(window.location.search);
+  const placeId = params.get("place");
+  if (placeId && /^Q[1-9]\d{0,11}$/.test(placeId)) {
+    window.dispatchEvent(new CustomEvent("time-layer-restore-place", { detail: { id: placeId } }));
+  }
+});
 initialiseFromAddress();
