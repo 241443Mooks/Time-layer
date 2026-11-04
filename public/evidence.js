@@ -208,11 +208,16 @@
   async function load(force = false) {
     if (!panel.open) return;
     const view = selected.view;
+    if (pending) {
+      pending.abort();
+      requestId++;
+      pending = null;
+      refresh.disabled = false;
+    }
     if (cached.has(view) && !force) {
       showRecords(cached.get(view));
       return;
     }
-    if (pending) pending.abort();
     const controller = new AbortController();
     pending = controller;
     const thisRequest = ++requestId;
