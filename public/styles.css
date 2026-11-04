@@ -195,3 +195,23 @@
 .featured-trail-button span{display:block;color:#536c5e;font-size:.83rem;line-height:1.5}
 .featured-trail-source{display:inline-block;margin:10px 0 2px;font-weight:700;color:#2d6953;font-size:.78rem}
 .featured-trail-caveat{color:#687a6d;font-size:.75rem;line-height:1.5;margin:5px 0 0}
+
+
+/* Experimental aligned renderer. The original flippable embeds stay intact. */
+.map-alignment-controls{display:flex;align-items:center;flex-wrap:wrap;gap:7px 18px;margin:0 0 12px;font-size:.84rem;color:#3d5d50}
+.map-alignment-label{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-weight:700}
+.map-alignment-label input{width:18px;height:18px;accent-color:#285d48;cursor:pointer}
+.map-beta{display:inline-block;vertical-align:middle;margin-left:4px;border:1px solid #c49b6e;border-radius:4px;padding:2px 5px;color:#8a5e31;font-size:.56rem;letter-spacing:.1em}
+.map-alignment-help{color:#6c7b70;line-height:1.4;font-size:.76rem}
+.shared-map-host{grid-row:1;grid-column:1;position:relative;min-width:0;background:#e3e7e1;z-index:2}
+.shared-map-host[hidden]{display:none}
+.map-stage.is-shared .map-pane{display:none}
+.map-stage.is-shared .shared-map-host{display:block}
+.shared-map{height:clamp(340px,52vw,570px);width:100%}
+.shared-map-attribution{position:relative;background:#fffdf9;text-align:right;margin:0;padding:10px 16px;font-size:.69rem;color:#52695c}
+.shared-map-attribution a{color:#2c6851}
+@media(max-width:610px){
+ .map-alignment-controls{gap:6px;margin-bottom:12px}
+ .map-alignment-help{width:100%}
+ .shared-map{height:350px}
+}
