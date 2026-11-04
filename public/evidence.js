@@ -120,9 +120,10 @@
     // the selected year. Unresolved dates need a separate research view.
     return records.filter(record => dateState(record.tags, selected.year) === "compatible")
       .sort((a, b) => {
-        const named = Number(Boolean(b.tags.name || b.tags["name:en"])) -
-          Number(Boolean(a.tags.name || a.tags["name:en"]));
-        if (named) return named;
+        // Newest recorded start first; never use alphabetical order as the
+        // primary sort for a historical timeline.
+        const yearDifference = parseExactYear(b.tags.start_date) - parseExactYear(a.tags.start_date);
+        if (yearDifference) return yearDifference;
         return displayName(a).localeCompare(displayName(b));
       }).slice(0, 8);
   }
