@@ -167,25 +167,46 @@
       // Filtering must be initialized before visualising the historical style.
       map.filterByDate(historicalDate(selection.year));
     });
-    map.once("load", () => {
-      map.addSource("time-layer-osm-tiles", {
-        type: "raster",
-        tiles: [OSM_RASTER],
-        tileSize: 256,
-        maxzoom: 19,
-        attribution: "© OpenStreetMap contributors"
+    // If the stylesheet or its dependencies never finish loading, restore
+    // the existing iframe map instead of leaving the user with a blank pane.
+    await new Promise((resolve, reject) => {
+      const watchdog = window.setTimeout(
+        () => reject(new Error("The shared map did not load in time.")),
+        18000
+      );
+      map.once("load", () => {
+        window.clearTimeout(watchdog);
+        try {
+          map.addSource("time-layer-osm-tiles", {
+            type: "raster",
+            tiles: [OSM_RASTER],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: "© OpenStreetMap contributors"
+          });
+          map.addLayer({
+            id: OSM_LAYER,
+            type: "raster",
+            source: "time-layer-osm-tiles",
+            layout: { visibility: "none" }
+          });
+          ready = true;
+          syncSelection();
+          if (toggle.checked) {
+            window.requestAnimationFrame(() => map.resize());
+          }
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
       });
-      map.addLayer({
-        id: OSM_LAYER,
-        type: "raster",
-        source: "time-layer-osm-tiles",
-        layout: { visibility: "none" }
-      });
-      ready = true;
-      syncSelection();
-      if (toggle.checked) {
-        window.requestAnimationFrame(() => map.resize());
-      }
+    }).catch(error => {
+      if (map) map.remove();
+      map = null;
+      ready = false;
+      lastPlace = null;
+      lastYear = null;
+      throw error;
     });
   }
 
