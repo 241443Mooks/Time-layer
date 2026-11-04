@@ -6,7 +6,7 @@ A tiny, curiosity-led experiment: **look at the same part of Manchester today an
 
 ## Status
 
-**Prototype source created 4 November 2026. Not yet deployed or browser-validated.** This is an exploratory build, not a published historical reference. A year choice controls which records OpenHistoricalMap renders; it **does not** select a georeferenced scan of a map actually drawn in that year.
+**Live deployment (user-confirmed 4 November 2026):** [time-layer.corneliuslobster.workers.dev](https://time-layer.corneliuslobster.workers.dev/). The owner has explored the initial map and reported it interesting but somewhat clunky. The expanded year controls committed on 4 November have not yet been independently browser-checked or confirmed deployed. This is an exploratory build, not a published historical reference. A year choice controls which records OpenHistoricalMap renders; it **does not** select a georeferenced scan of a map actually drawn in that year.
 
 ## First experiment (deliberately small)
 
@@ -20,13 +20,15 @@ Start at Manchester city centre. Choose among five *viewpoints to investigate* (
 
 - Two independent, interactive map embeds side by side (stacked on phones).
 - Official [OpenHistoricalMap embed](https://github.com/OpenHistoricalMap/openhistoricalmap-embed), filtered by selected year, and the official [OpenStreetMap embed](https://wiki.openstreetmap.org/wiki/Export) for present-day comparison.
-- Five Manchester viewpoint presets, a year slider, quick year buttons, links to open each source in its own site, and shareable URL parameters.
+- Five Manchester viewpoint presets, four historical-period controls (4000 BCE–1 BCE, 1–999 CE, 1000–1599 CE, 1600–2026 CE), a year slider within each period, quick jumps (including Roman-era 79 CE), links to open each source, and shareable URL parameters. Previously shared links such as `?view=centre&year=1678` remain compatible.
+- BCE date formatting follows OpenHistoricalMap's astronomical year convention: `year=-999` in this site's URL shows **1000 BCE** and is passed as `date=-0999` to the embed; `year=0` means **1 BCE**, not an invented year zero. These are **date selections**, not claims of feature coverage.
 - No API keys, databases, accounts, analytics, generated claims, scraped map screenshots or build system.
 
 ### Intentional limits
 
 - **Panning/zooming the two embeds is independent.** Choosing a viewpoint recentres both, but dragging one does not automatically drag the other. This is a first test of the idea, not yet a fully synchronised map engine.
-- Historical coverage and date precision vary. A missing shape on the older map **does not establish** that a place or building did not exist.
+- Historical coverage and date precision vary, especially for ancient and medieval Manchester. The software supports dates as far back as about 4000 BCE, but there may be very little (or nothing) mapped at a particular place or year. A missing shape on the older map **does not establish** that a place or building did not exist.
+- Documentation: [OpenHistoricalMap browsing and historical date range](https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Browsing), [embed year/negative-year syntax](https://github.com/OpenHistoricalMap/openhistoricalmap-embed), [BCE year conversion](https://forum.openhistoricalmap.org/t/ring-in-the-new-year-with-rails-dates-and-more/91).
 - OpenHistoricalMap data is community-contributed and may contain individual features under rights different from CC0.
 - Modern map tiles are provided through OpenStreetMap's own embedded map. Do not treat OSMF infrastructure as an unrestricted/high-volume or commercial tile CDN.
 - No historical facts or five site-specific changes have been claimed without verifying records.
@@ -49,7 +51,7 @@ This project uses a minimal 'wrangler.toml' with the static assets directory set
 npx wrangler deploy
 ```
 
-Or use Cloudflare's GitHub-connected deployment with **Build command: none**, **Deploy command: npx wrangler deploy**, and **Root directory: /**. Configure your Cloudflare account/permissions there. **No deployment has been performed here yet.**
+Or use Cloudflare's GitHub-connected deployment with **Build command: none**, **Deploy command: npx wrangler deploy**, and **Root directory: /**. Configure your Cloudflare account/permissions there. **A public deployment already exists, user-confirmed above.** GitHub commits may trigger Cloudflare automatic redeployment if configured; verify the new date controls appear on the live site rather than assuming the redeployment succeeded.
 
 ## A sensible next step — only after testing
 
