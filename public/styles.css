@@ -183,3 +183,15 @@
  .map-stage .map-card-foot a{font-size:.74rem}
 }
 @media(prefers-reduced-motion:reduce){.map-mode{transition:none}}
+
+
+/* v0.4: make a verified relationship the obvious start of the rabbit hole. */
+.featured-trail{margin:17px 0 4px;padding:16px;background:#ecf3ea;border-left:3px solid #b2804e;border-radius:4px}
+.featured-trail[hidden]{display:none}
+.featured-eyebrow{letter-spacing:.10em;color:#8e613b;font-weight:800;font-size:.65rem;margin:0 0 9px}
+.featured-trail-button{width:100%;text-align:left;background:#fffefb;color:#235344;border:1px solid #c8dacf;border-radius:5px;padding:13px 15px}
+.featured-trail-button:hover{border-color:#8caf9a;background:#f9fcf8}
+.featured-trail-button strong{display:block;font:normal 1.25rem Georgia,serif;margin-bottom:6px}
+.featured-trail-button span{display:block;color:#536c5e;font-size:.83rem;line-height:1.5}
+.featured-trail-source{display:inline-block;margin:10px 0 2px;font-weight:700;color:#2d6953;font-size:.78rem}
+.featured-trail-caveat{color:#687a6d;font-size:.75rem;line-height:1.5;margin:5px 0 0}
