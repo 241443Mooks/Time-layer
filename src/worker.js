@@ -9,6 +9,22 @@ const VIEWPOINTS = Object.freeze({
   piccadilly: [53.4773, -2.2318]
 });
 const LIMIT = 150;
+// Year-specific windows reduce historical sampling bias and avoid querying the
+// Overpass service on every one-year slider movement.
+const WINDOW_YEARS = 25;
+const FIRST_YEAR = -3999;
+const LAST_YEAR = 2026;
+
+function validHistoricalYear(raw) {
+  if (typeof raw !== "string" || !/^-?\d{1,4}$/.test(raw)) return null;
+  const year = Number(raw);
+  return Number.isSafeInteger(year) && year >= FIRST_YEAR && year <= LAST_YEAR ? year : null;
+}
+
+function periodForYear(year) {
+  const start = Math.floor(year / WINDOW_YEARS) * WINDOW_YEARS;
+  return { start, end: Math.min(LAST_YEAR, start + WINDOW_YEARS - 1) };
+}
 
 function json(body, status = 200, maxAge = 0) {
   return Response.json(body, {
@@ -26,10 +42,22 @@ function bounds([lat, lon]) {
     .map(x => x.toFixed(6)).join(",");
 }
 
-function overpassQuery(bbox) {
-  // The limited results are not a representative or complete coverage sample.
+function overpassQuery(bbox, period) {
   const shape = "(" + bbox + ")";
-  return '[out:json][timeout:17][maxsize:8388608];(' +
+  const header = '[out:json][timeout:17][maxsize:8388608];';
+  if (period) {
+    // Official OHM Overpass QL supports numeric comparisons on date tags.
+    // A 25-year interval is queried server-side BEFORE the result cap.
+    // Strict client date parsing still decides whether a feature matches the
+    // individual selected year; approximations are never asserted as exact.
+    return header +
+      'nwr["start_date"]' + shape +
+      '(if:is_number(t["start_date"]) && number(t["start_date"]) <= ' + period.end +
+      ' && (!is_tag("end_date") || (is_number(t["end_date"]) && number(t["end_date"]) >= ' + period.start + ')));' +
+      'out center ' + LIMIT + ';';
+  }
+  // Backward compatible, all-period sample for old direct endpoint links.
+  return header + '(' +
     'nwr["start_date"]' + shape + ';' +
     'nwr["end_date"]' + shape + ';' +
     'nwr["start_date:edtf"]' + shape + ';' +
@@ -51,6 +79,12 @@ export default {
     if (!view || !Object.prototype.hasOwnProperty.call(VIEWPOINTS, view)) {
       return json({ error: "Choose one of the five supported Manchester viewpoints." }, 400);
     }
+    const suppliedYear = url.searchParams.get("year");
+    const year = suppliedYear === null ? null : validHistoricalYear(suppliedYear);
+    if (suppliedYear !== null && year === null) {
+      return json({ error: "Year must be an integer from 3999 BCE through 2026 CE." }, 400);
+    }
+    const period = year === null ? null : periodForYear(year);
     const bbox = bounds(VIEWPOINTS[view]);
     try {
       const response = await fetch(OVERPASS, {
@@ -59,7 +93,7 @@ export default {
           "Accept": "application/json",
           "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
         },
-        body: new URLSearchParams({ data: overpassQuery(bbox) }).toString(),
+        body: new URLSearchParams({ data: overpassQuery(bbox, period) }).toString(),
         signal: AbortSignal.timeout(19000)
       });
       if (!response.ok) {
@@ -83,6 +117,9 @@ export default {
         queried: new Date().toISOString(),
         limit: LIMIT,
         capped: payload.elements.length >= LIMIT,
+        sampling: period ? "date-window" : "all-dates-legacy",
+        windowStart: period ? period.start : null,
+        windowEnd: period ? period.end : null,
         elements
       }, 200, 300);
     } catch (_error) {
