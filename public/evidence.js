@@ -21,7 +21,13 @@
   const cached = new Map();
   let selected = { view: "centre", year: 1900, label: "Manchester city centre" };
   let pending = null;
+  let pendingKey = null;
   let requestId = 0;
+  const WINDOW_YEARS = 25;
+
+  function cacheKey(view, year) {
+    return view + ":" + (Math.floor(year / WINDOW_YEARS) * WINDOW_YEARS);
+  }
 
   function yearLabel(year) {
     return year <= 0 ? String(1 - year) + " BCE" : String(year) + " CE";
@@ -189,7 +195,11 @@
     stats.dated.textContent = String(dated);
     stats.compatible.textContent = String(matching.length);
     stats.sourced.textContent = String(sourced);
-    coverage.textContent = (payload.capped ? "This query reached its " + payload.limit + "-record cap and may miss older records. " : "This is a bounded, selective local query. ") +
+    const windowText = Number.isInteger(payload.windowStart) && Number.isInteger(payload.windowEnd) ?
+      "Search window: " + yearLabel(payload.windowStart) + "–" + yearLabel(payload.windowEnd) + ". " :
+      "Legacy all-period sample. ";
+    coverage.textContent = windowText +
+      (payload.capped ? "This query reached its " + payload.limit + "-record cap, so some relevant records may be missing. " : "This remains a bounded and selective local query. ") +
       "Showing only features with date bounds compatible with " + yearLabel(selected.year) + ". " +
       unresolved + " returned records have unresolved dates and are not shown as matches. " +
       "A compatible date does not prove a feature existed in that year. " +
@@ -229,25 +239,31 @@
   async function load(force = false) {
     if (!panel.open) return;
     const view = selected.view;
-    if (pending) {
-      pending.abort();
-      requestId++;
-      pending = null;
-      refresh.disabled = false;
-    }
-    if (cached.has(view) && !force) {
-      showRecords(cached.get(view));
+    const year = selected.year;
+    const key = cacheKey(view, year);
+    if (!force && cached.has(key)) {
+      if (pending && pendingKey !== key) {
+        pending.abort();
+        requestId++;
+        pending = null;
+        pendingKey = null;
+      }
+      showRecords(cached.get(key));
       return;
     }
+    if (pending && pendingKey === key && !force) return;
+    if (pending) pending.abort();
     const controller = new AbortController();
     pending = controller;
+    pendingKey = key;
     const thisRequest = ++requestId;
     refresh.disabled = true;
     results.hidden = true;
     status.textContent = "Checking nearby dated records around " + selected.label + "…";
     teaser.textContent = "Checking records…";
     try {
-      const response = await fetch("/api/evidence?view=" + encodeURIComponent(view), {
+      const response = await fetch("/api/evidence?view=" + encodeURIComponent(view) +
+        "&year=" + encodeURIComponent(String(year)), {
         headers: { Accept: "application/json" },
         signal: controller.signal
       });
@@ -256,7 +272,9 @@
         throw new Error((payload && payload.error) || "The evidence API returned an unexpected response.");
       }
       if (thisRequest !== requestId) return;
-      cached.set(view, payload);
+      cached.set(key, payload);
+      // Bound memory use while exploring lots of historical periods.
+      if (cached.size > 12) cached.delete(cached.keys().next().value);
       showRecords(payload);
     } catch (error) {
       if (thisRequest !== requestId) return;
@@ -268,6 +286,7 @@
       if (thisRequest === requestId) {
         refresh.disabled = false;
         pending = null;
+        pendingKey = null;
       }
     }
   }
@@ -283,9 +302,9 @@
     const previousView = selected.view;
     selected = detail;
     if (panel.open) {
-      if (previousView !== selected.view) load();
-      else if (cached.has(selected.view)) showRecords(cached.get(selected.view));
-      // When a request is in flight, it will use the latest year on completion.
+      // Reuse the same 25-year window without another API call. Request
+      // another narrow window only when the user travels outside it.
+      load();
     } else {
       teaser.textContent = "Check records around " + selected.label + " · " + yearLabel(selected.year);
     }
