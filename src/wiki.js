@@ -142,6 +142,20 @@ async function nearbyWikipedia(lat, lng, id) {
   }));
 }
 
+// A tiny, explicitly source-backed research trail to prove the concept.
+// This is NOT an automatically inferred historical relationship.
+async function researchedTrail(id) {
+  if (id !== "Q2308772") return [];
+  const fort = await resolvePlace("Q3285089");
+  if (!fort) return [];
+  return [{
+    ...fort,
+    kind: "source-backed-lead",
+    description: "The Castlefield Wikipedia article identifies this Roman fort at the site. Check the fort's own archaeology and dating.",
+    evidenceUrl: "https://en.wikipedia.org/wiki/Castlefield"
+  }];
+}
+
 export async function placeDetail(request) {
   if (request.method !== "GET") return json({ error: "Only GET is supported." }, 405);
   const id = new URL(request.url).searchParams.get("id");
@@ -149,14 +163,16 @@ export async function placeDetail(request) {
   try {
     const place = await resolvePlace(id);
     if (!place) return json({ error: "No usable coordinates exist for this Wikidata item." }, 404);
-    const [summaryResult, nearbyResult] = await Promise.allSettled([
+    const [summaryResult, nearbyResult, trailResult] = await Promise.allSettled([
       wikipediaSummary(place.article),
-      nearbyWikipedia(place.lat, place.lng, id)
+      nearbyWikipedia(place.lat, place.lng, id),
+      researchedTrail(id)
     ]);
     return json({
       place,
       summary: summaryResult.status === "fulfilled" ? summaryResult.value : null,
       connections: nearbyResult.status === "fulfilled" ? nearbyResult.value : [],
+      featured: trailResult.status === "fulfilled" ? trailResult.value : [],
       warnings: [
         ...(summaryResult.status !== "fulfilled" ? ["Wikipedia introduction unavailable"] : []),
         ...(nearbyResult.status !== "fulfilled" ? ["Nearby Wikipedia articles unavailable"] : [])
