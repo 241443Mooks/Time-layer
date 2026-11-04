@@ -140,6 +140,9 @@ function render({ updateModern = false, updateUrl = true } = {}) {
   if (updateUrl) updateAddress();
   status.textContent = "Maps set to " + view.label + " in " + formatYear(currentYear) +
     ". You can pan each map independently; date and feature coverage are not guaranteed.";
+  window.dispatchEvent(new CustomEvent("time-layer-selection", {
+    detail: { view: currentView, year: currentYear, label: view.label }
+  }));
 }
 
 function chooseView(key) {
@@ -201,6 +204,11 @@ share.addEventListener("click", async () => {
   } catch (_error) {
     status.textContent = "Automatic copying is unavailable. Copy the current page address instead.";
   }
+});
+
+window.addEventListener("time-layer-set-year", event => {
+  const year = event.detail && event.detail.year;
+  if (Number.isInteger(year)) chooseYear(year);
 });
 
 window.addEventListener("popstate", initialiseFromAddress);
