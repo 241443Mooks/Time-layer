@@ -85,6 +85,21 @@ Added an optional **Keep views aligned · BETA** switch just above the map. When
 
 **Suggested test:** Open [Castlefield in 79 CE with alignment on](https://time-layer.corneliuslobster.workers.dev/?place=Q2308772&year=79&aligned=1), move/zoom the map, press **Today**, then **Past**. The exact map position should remain unchanged. Change the year; your position should stay fixed. Switch **Keep views aligned** off to compare with the original embeds.
 
+### Version 0.6 — Compact journey controls and image-led discovery (5 November 2026)
+
+**From phone feedback:** The full place search and year controls dominated the viewport, and the discovery section contained too much uninterrupted text.
+
+- **Collapsible journey strip**: place and year controls now sit in one `<details>` disclosure. A direct `?place=Q...&year=...` or legacy view link starts with the controls collapsed into a compact **place · year** heading; a brand-new unconfigured session opens the controls. Selecting a new place collapses them, while adjusting a year leaves them open until the user finishes. **Explore this place** closes the controls and jumps to the map. The summary always reflects the current selection.
+- **Optional fold-away map**: the map viewport and its controls now live inside an open-by-default disclosure. Close it to focus on discoveries, and expand it again at any time. The shared MapLibre renderer receives a resize event when revealed, without changing its camera.
+- **Shorter introductions**: Wikipedia background is shown as a short preview (up to about 245 characters) with the full extract behind **Read more about this place**.
+- **Wikimedia Commons image pipeline**: the place details endpoint obtains free-licensed Wikipedia PageImages (the place and its curated lead plus nearby articles), validates the underlying files using a bounded Commons `imageinfo` request and requires an allowed individual image licence such as CC BY, CC BY-SA, CC0 or public domain. Only validated Commons images are returned; creator, licence and original file page accompany each image. No unverified thumbnail is displayed. Media lookup failure does not break the place record.
+- **Image-led pathways**: a credited hero illustration, a credited image for the first sourced historical thread (where available), and up to three horizontally scrollable pictured nearby subjects. The other nearby links remain expandable. Images are explicitly labelled as **illustrations with unspecified creation date**, not photographs or maps of the selected historical year.
+- **Live source check:** `/api/place?id=Q2308772` returned a verified-licence Castlefield image (CC BY-SA 2.0), a Mamucium illustration (CC BY 2.0) and licensed images on six nearby article records. Mocked DOM interaction tests passed for media/credits, short versus full text and compact journey controls. The updated HTML was observed live, but real Android tactile and performance testing is still required.
+
+**Discovery distinction:** Searching “London Bridge” currently returns both London Bridge station and multiple historic bridge entities. For 1625 CE, the separately identified [London Bridge (1209–1831), Wikidata Q56739974](https://www.wikidata.org/wiki/Q56739974) is a more suitable research lead than the railway station. Name matches must not be automatically treated as interchangeable sites or historical entities.
+
+See [Discovery Warren roadmap](docs/discovery-warren.md). Authentic georeferenced scans, museum artefact media, audio, video and a multi-source knowledge graph are **future work**, not yet included in this version.
+
 ### Intentional limits
 
 - **Panning/zooming the two embeds is independent.** Choosing a viewpoint recentres both, but dragging one does not automatically drag the other. This is a first test of the idea, not yet a fully synchronised map engine.
