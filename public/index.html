@@ -35,6 +35,13 @@
   </header>
 
   <main id="explore">
+    <details id="journey-controls" class="journey-controls">
+      <summary class="journey-summary">
+        <span class="journey-summary-label">YOUR JOURNEY</span>
+        <span class="journey-summary-values"><strong id="journey-place">Manchester city centre</strong><span aria-hidden="true"> · </span><strong id="journey-year">1900 CE</strong></span>
+        <span class="journey-summary-change">Change place or year <span aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="journey-control-body">
     <section class="control-panel destination-panel" aria-labelledby="where-heading">
       <div class="panel-head">
         <div>
@@ -91,6 +98,10 @@
       <p class="helper" id="year-help">Choose a period, then drag and release the slider. Historical coverage varies hugely across the world and by century; a blank map does not establish that nothing existed.</p>
     </section>
 
+        <button type="button" class="journey-done" id="journey-done">Explore this place <span aria-hidden="true">↓</span></button>
+      </div>
+    </details>
+
     <section class="map-section" aria-label="Compare maps">
       <div class="map-head">
         <div>
@@ -100,6 +111,9 @@
         <button type="button" id="share" class="share-button">Copy this view ↗</button>
       </div>
       <p id="place-hint" class="place-hint">Look for streets, boundaries and buildings that appear, disappear or change.</p>
+      <details id="map-disclosure" class="map-disclosure" open>
+        <summary>Map window <span>Show or hide</span></summary>
+        <div class="map-disclosure-body">
       <div class="map-switcher" role="group" aria-label="Switch map view">
         <button type="button" id="map-mode-historical" class="map-mode is-active" aria-pressed="true" aria-controls="historical-pane">Past · reconstruction</button>
         <button type="button" id="map-mode-modern" class="map-mode" aria-pressed="false" aria-controls="modern-pane">Today</button>
@@ -136,6 +150,8 @@
         <p>Our historical view is a reconstruction. Digitised maps are different: they show the cartography people actually drew. Explore <a href="https://maps.nls.uk/geo/explore/" target="_blank" rel="noopener noreferrer">NLS georeferenced maps ↗</a> (strong Great Britain coverage), or <a href="https://www.davidrumsey.com/view" target="_blank" rel="noopener noreferrer">David Rumsey’s historical map collection ↗</a> (international). Dates, rights and geographical availability vary; neither archive is yet embedded in this viewer.</p>
       </details>
       <p class="map-note" id="map-status" role="status">Flip between past and present. Turn on “Keep views aligned” to try one shared map camera; the original embed comparison remains available.</p>
+        </div>
+      </details>
     </section>
 
     <section id="discovery" class="discovery-section" aria-labelledby="discover-heading">
