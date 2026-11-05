@@ -81,6 +81,8 @@ Added an optional **Keep views aligned · BETA** switch just above the map. When
 
 **Operating caution:** The beta modern layer requests `https://tile.openstreetmap.org/` directly. This is appropriate only for limited respectful experiments under the [OSMF tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Before scaling publicly, switch to an explicitly licensed tile provider or compliant hosting and verify caching, attribution, service policies and performance. The third-party script dependencies are currently pinned on jsDelivr; plan version upgrades and a CSP/reliability review before wider release.
 
+**Android beta fix (5 November 2026):** A real-phone screenshot showed `window.maplibregl.supported is not a function` when enabling alignment. MapLibre 5.6.0 does not expose that function in this browser bundle. The compatibility check now only calls it if present; otherwise the Map constructor handles WebGL support. The beta also clears an interrupted initial-load promise so the toggle can be retried instead of immediately failing again. Both shared-camera flip/year and first-failure/retry passed focused mocked tests; the corrected script was retrieved from the live site. **Actual Android map tiles, alignment and performance still need field verification.**
+
 **Suggested test:** Open [Castlefield in 79 CE with alignment on](https://time-layer.corneliuslobster.workers.dev/?place=Q2308772&year=79&aligned=1), move/zoom the map, press **Today**, then **Past**. The exact map position should remain unchanged. Change the year; your position should stay fixed. Switch **Keep views aligned** off to compare with the original embeds.
 
 ### Intentional limits
