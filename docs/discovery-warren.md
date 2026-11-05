@@ -61,3 +61,16 @@ The API supports search by terms and returns bounded pages. More source types sh
 4. **Iterative UX:** replace the expanding sea of lists with compact source cards and a persistent year-and-place breadcrumb. Keep clear "on this date" versus "evidence made later" sections.
 
 **Not shipped:** original map overlays, deeper archaeology or museum content, National Archives records in the Time-Layer frontend, synced map dragging, and an automatically constructed multi-hop knowledge graph.
+
+## 5 November 2026: an image-led Warren in the live prototype
+
+The user reported two problems in a real Android screenshot: full place/year controls consumed several screens, and the discoveries lacked rich visual material.
+
+**Now built:** collapsible compact place/year summary; a separate optional fold-away map; short context with a **Read more** disclosure; a licensed hero image (when the Commons file can be independently verified); pictured featured leads; and a three-card sideways-scrolling nearby-subject strip. The existing map flip and opt-in aligned MapLibre renderer remain available. Expanded map content triggers a MapLibre resize. Live HTML and the Castlefield media API returned expected markup and item data; browser-device interaction remains a field test.
+
+**Copyright and visual epistemology:** source media comes from Wikipedia PageImages via Commons `imageinfo` metadata. Images only render after individual file licence verification (CC BY/SA, CC0, public domain), with creator, named licence and clickable file-details page. The system does **not** infer the age of a photograph from the subject it depicts, nor pretend a present-day photo existed in the selected year. No external stock images or fabricated historical reconstructions are used.
+
+**Search ambiguity encountered:** `London Bridge station` (Q801125) is not `London Bridge` (1209–1831, Q56739974). A date selector alone does not resolve ambiguous place names. The eventual place picker needs clearer temporal and type context, ideally sourced, without inventing ancient or disputed boundaries.
+
+**Next vertical slice:** make the existing pictured Castlefield → Mamucium lead lead into one official archaeological source and, where rights permit, a dated museum object image. Then test a licensed historic-map scan with the map's actual date displayed independently from the user's selected year. Prefer verified relationship *quality* to raw source counts.
+
