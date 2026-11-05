@@ -122,7 +122,8 @@ async function nearbyWikipedia(lat, lng, id) {
   const data = await fetchJson(urlFor(WIKIPEDIA, {
     action: "query", generator: "geosearch",
     ggscoord: lat + "|" + lng, ggsradius: 3500, ggslimit: 20,
-    prop: "coordinates|pageprops|description",
+    prop: "coordinates|pageprops|description|pageimages",
+    piprop: "name|thumbnail", pithumbsize: 500, pilicense: "free",
     format: "json"
   }));
   const pages = Object.values(data.query?.pages || {});
@@ -138,7 +139,9 @@ async function nearbyWikipedia(lat, lng, id) {
     description: String(page.description || page.pageprops?.["wikibase-shortdesc"] || "Nearby Wikipedia article").slice(0, 200),
     lat: Number(page.coordinates[0].lat.toFixed(6)),
     lng: Number(page.coordinates[0].lon.toFixed(6)),
-    articleUrl: wikiArticleUrl(page.title)
+    articleUrl: wikiArticleUrl(page.title),
+    imageFilename: typeof page.pageimage === "string" ? page.pageimage : null,
+    imageThumbUrl: page.thumbnail?.source || null
   }));
 }
 
@@ -156,6 +159,111 @@ async function researchedTrail(id) {
   }];
 }
 
+// Real photos and artwork add visual richness, but individual file licences
+// must be checked. Keep requests bounded and do not display unverified media.
+const COMMONS = "https://commons.wikimedia.org/w/api.php";
+
+function htmlPlain(value) {
+  if (typeof value !== "string") return "";
+  return value.replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
+function wikipediaImageUrl(src) {
+  try {
+    const url = new URL(src);
+    return url.protocol === "https:" &&
+      ["upload.wikimedia.org", "thumb.wikimedia.org"].includes(url.hostname);
+  } catch { return false; }
+}
+
+async function findArticleImages(titles) {
+  const chosen = [...new Set(titles.filter(Boolean))].slice(0, 2);
+  if (!chosen.length) return {};
+  const response = await fetchJson(urlFor(WIKIPEDIA, {
+    action: "query", titles: chosen.join("|"), prop: "pageimages",
+    piprop: "name|thumbnail", pithumbsize: 560,
+    pilicense: "free", format: "json"
+  }));
+  const images = {};
+  for (const page of Object.values(response.query?.pages || {})) {
+    if (page.pageimage && wikipediaImageUrl(page.thumbnail?.source)) {
+      images[page.title] = {
+        filename: page.pageimage,
+        thumbnail: page.thumbnail.source
+      };
+    }
+  }
+  return images;
+}
+
+function fileKey(filename) {
+  return String(filename || "").replace(/_/g, " ").normalize("NFC").toLowerCase();
+}
+
+function imageMetadata(page) {
+  const file = page?.imageinfo?.[0];
+  const meta = file?.extmetadata || {};
+  const license = htmlPlain(meta.LicenseShortName?.value);
+  // Don't assume a thumbnail is reusable just because a Wikipedia API
+  // returned it. Require an explicitly open/public-domain media licence.
+  if (!/^(CC0|CC BY(?:-SA)?(?: |$)|public domain|PD(?: |-|$))/i.test(license)) return null;
+  const filePage = file?.descriptionurl;
+  if (typeof filePage !== "string" ||
+      !filePage.startsWith("https://commons.wikimedia.org/wiki/File:")) return null;
+  const creator = htmlPlain(meta.Attribution?.value || meta.Artist?.value);
+  const licenseUrl = meta.LicenseUrl?.value;
+  return {
+    filePage,
+    creator: creator || "See the original file for creator credit",
+    license,
+    licenseUrl: typeof licenseUrl === "string" &&
+      /^https:\/\/(?:creativecommons\.org|www\.creativecommons\.org)\//.test(licenseUrl)
+        ? licenseUrl : null
+  };
+}
+
+async function attachVerifiedMedia(place, summary, featured, near) {
+  const titles = [place.article, featured[0]?.article].filter(Boolean);
+  const selected = await findArticleImages(titles);
+  const requests = [];
+  const main = selected[place.article];
+  if (main) requests.push({ subject: summary, filename: main.filename, url: main.thumbnail });
+  const feature = featured[0];
+  const featureImage = feature && selected[feature.article];
+  if (featureImage) requests.push({ subject: feature, filename: featureImage.filename, url: featureImage.thumbnail });
+  for (const item of near.slice(0, 7)) {
+    if (item.imageFilename && wikipediaImageUrl(item.imageThumbUrl)) {
+      requests.push({ subject: item, filename: item.imageFilename, url: item.imageThumbUrl });
+    }
+  }
+  const chosen = requests.filter(x => wikipediaImageUrl(x.url)).slice(0, 8);
+  if (!chosen.length) return;
+  const names = [...new Set(chosen.map(x => x.filename))];
+  const data = await fetchJson(urlFor(COMMONS, {
+    action: "query", titles: names.map(x => "File:" + x).join("|"),
+    prop: "imageinfo", iiprop: "url|extmetadata", format: "json"
+  }));
+  const byName = {};
+  for (const page of Object.values(data.query?.pages || {})) {
+    const key = fileKey(page.title.replace(/^File:/i, ""));
+    byName[key] = imageMetadata(page);
+  }
+  for (const request of chosen) {
+    const info = byName[fileKey(request.filename)];
+    if (info) {
+      request.subject.media = {
+        thumbnail: request.url,
+        alt: "Illustration from Wikimedia Commons related to " + (request.subject.label || request.subject.title || place.label),
+        ...info,
+        caveat: "Image creation date not established; not necessarily a view from the chosen year."
+      };
+    }
+  }
+}
+
 export async function placeDetail(request) {
   if (request.method !== "GET") return json({ error: "Only GET is supported." }, 405);
   const id = new URL(request.url).searchParams.get("id");
@@ -168,11 +276,21 @@ export async function placeDetail(request) {
       nearbyWikipedia(place.lat, place.lng, id),
       researchedTrail(id)
     ]);
+    const summary = summaryResult.status === "fulfilled" ? summaryResult.value : null;
+    const connections = nearbyResult.status === "fulfilled" ? nearbyResult.value : [];
+    const featured = trailResult.status === "fulfilled" ? trailResult.value : [];
+    try {
+      if (summary) await attachVerifiedMedia(place, summary, featured, connections);
+    } catch (_mediaError) {
+      // Never fail the historical discovery just because Commons metadata is down.
+    }
+    // Do not expose unlicensed, unverified thumbnail URLs.
+    const safeConnections = connections.map(({imageFilename, imageThumbUrl, ...rest}) => rest);
     return json({
       place,
-      summary: summaryResult.status === "fulfilled" ? summaryResult.value : null,
-      connections: nearbyResult.status === "fulfilled" ? nearbyResult.value : [],
-      featured: trailResult.status === "fulfilled" ? trailResult.value : [],
+      summary,
+      connections: safeConnections,
+      featured,
       warnings: [
         ...(summaryResult.status !== "fulfilled" ? ["Wikipedia introduction unavailable"] : []),
         ...(nearbyResult.status !== "fulfilled" ? ["Nearby Wikipedia articles unavailable"] : [])
