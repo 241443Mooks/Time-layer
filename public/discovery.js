@@ -12,6 +12,14 @@
   const title = document.getElementById("discovery-title");
   const description = document.getElementById("discovery-description");
   const summary = document.getElementById("discovery-summary");
+  const lead = document.getElementById("discovery-lead");
+  const about = document.getElementById("discovery-about");
+  const heroMedia = document.getElementById("discovery-media");
+  const heroImage = document.getElementById("discovery-image");
+  const heroCredit = document.getElementById("discovery-image-credit");
+  const heroSource = document.getElementById("discovery-image-source");
+  const gallery = document.getElementById("discovery-gallery");
+  const galleryContent = document.getElementById("discovery-gallery-content");
   const wikipedia = document.getElementById("discovery-wikipedia");
   const wikidata = document.getElementById("discovery-wikidata");
   const featuredTrail = document.getElementById("featured-trail");
@@ -78,6 +86,97 @@
     renderTrail();
   }
 
+  function safeMedia(media) {
+    if (!media || typeof media !== "object" ||
+        typeof media.thumbnail !== "string" || typeof media.filePage !== "string" ||
+        typeof media.license !== "string") return false;
+    try {
+      const image = new URL(media.thumbnail);
+      const source = new URL(media.filePage);
+      return image.protocol === "https:" &&
+        ["upload.wikimedia.org", "thumb.wikimedia.org"].includes(image.hostname) &&
+        source.origin === "https://commons.wikimedia.org" &&
+        source.pathname.startsWith("/wiki/File:");
+    } catch { return false; }
+  }
+
+  function concise(text) {
+    if (typeof text !== "string") return "";
+    const clean = text.replace(/\s+/g, " ").trim();
+    if (clean.length <= 245) return clean;
+    const words = clean.slice(0, 242);
+    return words.slice(0, Math.max(170, words.lastIndexOf(" "))) + "…";
+  }
+
+  function attributionText(media) {
+    return (media.creator || "Creator shown in original file") +
+      " · " + media.license;
+  }
+
+  function imageFigure(media, className, label) {
+    if (!safeMedia(media)) return null;
+    const figure = make("figure", className);
+    const picture = make("img");
+    picture.src = media.thumbnail;
+    picture.alt = media.alt || "Wikimedia illustration related to " + label;
+    picture.loading = "lazy";
+    picture.decoding = "async";
+    figure.appendChild(picture);
+    const caption = make("figcaption");
+    const info = make("span", "", attributionText(media));
+    caption.appendChild(info);
+    const fileLink = make("a", "", "Image rights ↗");
+    fileLink.href = media.filePage;
+    fileLink.target = "_blank";
+    fileLink.rel = "noopener noreferrer";
+    caption.appendChild(fileLink);
+    figure.appendChild(caption);
+    return figure;
+  }
+
+  function renderHero(media) {
+    heroMedia.hidden = !safeMedia(media);
+    if (!safeMedia(media)) {
+      heroImage.removeAttribute("src");
+      heroCredit.textContent = "";
+      heroSource.removeAttribute("href");
+      return;
+    }
+    heroImage.src = media.thumbnail;
+    heroImage.alt = media.alt || "Wikimedia illustration of this place";
+    heroCredit.textContent = attributionText(media);
+    heroSource.href = media.filePage;
+  }
+
+  function renderGallery(list) {
+    galleryContent.replaceChildren();
+    const pictured = Array.isArray(list) ?
+      list.filter(item => safePlace(item) && item.id !== currentId && safeMedia(item.media)).slice(0, 3) : [];
+    gallery.hidden = !pictured.length;
+    for (const item of pictured) {
+      const card = make("article", "discovery-visual-card");
+      const button = make("button", "discovery-visual-button");
+      button.type = "button";
+      const image = make("img");
+      image.src = item.media.thumbnail;
+      image.alt = item.media.alt || "Related illustration";
+      image.loading = "lazy";
+      image.decoding = "async";
+      button.appendChild(image);
+      const caption = make("span", "discovery-visual-title", item.label);
+      button.appendChild(caption);
+      button.addEventListener("click", () => navigate(item));
+      card.appendChild(button);
+      card.appendChild(make("p", "discovery-visual-context", "Nearby subject · not matched to your year"));
+      const credit = make("a", "discovery-visual-credit", attributionText(item.media) + " ↗");
+      credit.href = item.media.filePage;
+      credit.target = "_blank";
+      credit.rel = "noopener noreferrer";
+      card.appendChild(credit);
+      galleryContent.appendChild(card);
+    }
+  }
+
   function renderFeatured(leads) {
     featuredTrailContent.replaceChildren();
     const lead = Array.isArray(leads) ? leads.find(item =>
@@ -86,6 +185,8 @@
     if (!lead) return;
     const button = make("button", "featured-trail-button");
     button.type = "button";
+    const art = imageFigure(lead.media, "featured-trail-media", lead.label);
+    if (art) featuredTrailContent.appendChild(art);
     button.appendChild(make("strong", "", "Explore " + lead.label));
     button.appendChild(make("span", "", lead.description || "A documented connection worth investigating."));
     button.addEventListener("click", () => navigate(lead));
@@ -147,11 +248,17 @@
     const place = data.place;
     title.textContent = place.label;
     description.textContent = place.description;
-    summary.textContent = data.summary?.excerpt ||
+    const context = data.summary?.excerpt ||
       "No short English Wikipedia introduction is available for this place. Its Wikidata record may still have useful references.";
+    lead.textContent = concise(context);
+    summary.textContent = context;
+    about.hidden = context.length <= 245;
+    about.open = false;
+    renderHero(data.summary?.media);
     setLink(wikidata, place.wikidataUrl);
     setLink(wikipedia, data.summary?.link);
     renderFeatured(data.featured);
+    renderGallery(data.connections);
     renderConnections(data.connections);
     discoveryStatus.textContent = "General historical and geographical context from Wikimedia. " +
       "These links are not filtered to your selected year." +
@@ -163,6 +270,11 @@
     if (cache.has(id)) { displayDetail(cache.get(id)); return cache.get(id); }
     discoveryStatus.textContent = "Looking for background and nearby historical connections…";
     summary.textContent = "";
+    lead.textContent = "";
+    about.hidden = true;
+    renderHero(null);
+    gallery.hidden = true;
+    galleryContent.replaceChildren();
     description.textContent = "";
     connections.replaceChildren();
     connectionCount.textContent = "";
