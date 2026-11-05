@@ -30,7 +30,7 @@
         <h1>Choose somewhere.<br><em>Travel through time.</em></h1>
         <p class="intro">Pick a place anywhere on Earth. Choose a year. Compare then with now, investigate the evidence, and follow your curiosity to somewhere new.</p>
       </div>
-      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.3</strong></div>
+      <div class="hero-stamp" aria-label="Early prototype, historical coverage varies"><span>EXPERIMENT<br>IN PROGRESS</span><strong>v0.6</strong></div>
     </div>
   </header>
 
@@ -161,20 +161,37 @@
         <p class="helper">Wikidata and Wikipedia offer background and nearby articles—not proof that these subjects existed in your selected year.</p>
       </div>
       <div class="discovery-panel">
-        <p class="discovery-status" id="discovery-status" role="status" aria-live="polite">Choose a place to explore its historical context.</p>
-        <h3 id="discovery-title">Manchester</h3>
-        <p class="discovery-description" id="discovery-description"></p>
-        <p class="discovery-summary" id="discovery-summary"></p>
-        <div class="discovery-links">
-          <a id="discovery-wikipedia" target="_blank" rel="noopener noreferrer" hidden>Read on Wikipedia ↗</a>
-          <a id="discovery-wikidata" target="_blank" rel="noopener noreferrer" hidden>View Wikidata record ↗</a>
+        <div class="discovery-overview">
+          <figure id="discovery-media" class="discovery-media" hidden>
+            <img id="discovery-image" alt="" loading="lazy" decoding="async">
+            <figcaption><span id="discovery-image-credit"></span><a id="discovery-image-source" target="_blank" rel="noopener noreferrer">Photo credit &amp; licence ↗</a><small>Illustration only — not necessarily from your selected year.</small></figcaption>
+          </figure>
+          <div class="discovery-intro-copy">
+            <p class="discovery-status" id="discovery-status" role="status" aria-live="polite">Choose a place to explore its historical context.</p>
+            <h3 id="discovery-title">Manchester</h3>
+            <p class="discovery-description" id="discovery-description"></p>
+            <p class="discovery-lead" id="discovery-lead"></p>
+            <details id="discovery-about" class="discovery-about">
+              <summary>Read more about this place</summary>
+              <p class="discovery-summary" id="discovery-summary"></p>
+            </details>
+            <div class="discovery-links">
+              <a id="discovery-wikipedia" target="_blank" rel="noopener noreferrer" hidden>Read on Wikipedia ↗</a>
+              <a id="discovery-wikidata" target="_blank" rel="noopener noreferrer" hidden>View Wikidata record ↗</a>
+            </div>
+          </div>
         </div>
         <section id="featured-trail" class="featured-trail" aria-label="Featured historical connection" hidden>
           <p class="featured-eyebrow">A THREAD TO FOLLOW · SOURCE-LINKED LEAD</p>
           <div id="featured-trail-content"></div>
         </section>
+        <section id="discovery-gallery" class="discovery-gallery" aria-label="Explore pictured nearby subjects" hidden>
+          <h4>Other doors to explore</h4>
+          <p class="helper">Images and subjects from nearby Wikipedia pages — not necessarily from your selected year.</p>
+          <div id="discovery-gallery-content" class="discovery-gallery-content"></div>
+        </section>
         <details class="discovery-nearby" id="discovery-nearby">
-          <summary>Follow a connection <span id="discovery-connection-count"></span></summary>
+          <summary>See more nearby subjects <span id="discovery-connection-count"></span></summary>
           <p>Some links are explicitly supported by the named source; others are geographically nearby Wikipedia articles. None of these connections are automatically dated to your selected year.</p>
           <ul class="discovery-connections" id="discovery-connections"></ul>
         </details>
