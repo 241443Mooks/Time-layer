@@ -42,6 +42,20 @@ let currentView = "centre";
 let currentYear = DEFAULT_YEAR;
 let customPlace = null;
 const selectedPlaceName = document.getElementById("selected-place");
+const journeyControls = document.getElementById("journey-controls");
+const journeyPlace = document.getElementById("journey-place");
+const journeyYear = document.getElementById("journey-year");
+const journeyDone = document.getElementById("journey-done");
+const mapDisclosure = document.getElementById("map-disclosure");
+journeyDone.addEventListener("click", () => {
+  journeyControls.open = false;
+  document.getElementById("place-title").scrollIntoView({ block: "start", behavior: "smooth" });
+});
+mapDisclosure.addEventListener("toggle", () => {
+  if (mapDisclosure.open) {
+    window.dispatchEvent(new CustomEvent("time-layer-map-revealed"));
+  }
+});
 
 function currentMapView() {
   return customPlace || VIEWS[currentView];
@@ -167,6 +181,8 @@ function updateControls() {
   placeTitle.textContent = view.label;
   placeHint.textContent = view.hint || "Compare the mapped past with modern streets. Location and date precision vary.";
   selectedPlaceName.textContent = view.label;
+  journeyPlace.textContent = view.label;
+  journeyYear.textContent = formatYear(currentYear);
 
   document.querySelectorAll("[data-view]").forEach(button => {
     const active = button.dataset.view === currentView;
@@ -235,6 +251,7 @@ function choosePlace(place) {
   };
   currentView = "world";
   render({ updateModern: true });
+  journeyControls.open = false;
 }
 
 function chooseYear(year) {
@@ -257,6 +274,9 @@ function initialiseFromAddress() {
   const params = new URLSearchParams(window.location.search);
   currentView = validView(params.get("view"));
   currentYear = params.has("year") ? validYear(params.get("year")) : DEFAULT_YEAR;
+  // A direct link already has a destination and date. A first-time visitor
+  // sees the setup controls instead of an unexplained default place.
+  journeyControls.open = !params.has("place") && !params.has("view") && !params.has("year");
   render({ updateModern: true, updateUrl: false });
 }
 
