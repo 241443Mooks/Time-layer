@@ -95,7 +95,12 @@
       document.head.appendChild(link);
     }
     if (!window.maplibregl) await loadScript(MAPLIBRE);
-    if (!window.maplibregl || !window.maplibregl.supported()) {
+    const library = window.maplibregl;
+    // MapLibre GL v5's browser bundle does not expose a public
+    // maplibregl.supported() function. On those builds, construction checks
+    // WebGL support instead. Only call supported() when it actually exists.
+    if (!library || typeof library.Map !== "function" ||
+        (typeof library.supported === "function" && !library.supported())) {
       throw new Error("This browser cannot run the shared WebGL map.");
     }
     if (typeof window.maplibregl.Map.prototype.filterByDate !== "function") {
@@ -214,25 +219,35 @@
     showShared();
     status("Loading the shared historical map…");
     try {
-      if (!loading) {
-        loading = createMap().catch(error => {
+      if (!ready && !loading) loading = createMap();
+      if (loading) {
+        try {
+          await loading;
+        } finally {
+          // A cancelled first attempt must not leave a resolved promise
+          // blocking every subsequent tap of the switch.
           loading = null;
-          throw error;
-        });
+        }
       }
-      await loading;
-      if (!toggle.checked) return;
+      if (!toggle.checked) {
+        showEmbeds();
+        return;
+      }
+      if (!ready || !map) {
+        throw new Error("The shared map could not start. Please try again.");
+      }
       showShared();
-      if (ready && map) {
-        window.requestAnimationFrame(() => map.resize());
-        syncSelection();
-      }
+      window.requestAnimationFrame(() => map.resize());
+      syncSelection();
       updateAddress();
     } catch (error) {
-      // Never leave users with a broken map after a CDN/WebGL/tiles failure.
+      // Leave the control usable and restore the known-working iframe view.
+      // An explicit user cancellation shouldn't be presented as a failure.
+      if (!toggle.checked) return;
       toggle.checked = false;
       showEmbeds();
-      status(error.message + " Using the original map flip instead.");
+      status((error && error.message ? error.message : "The shared map could not load.") +
+        " Using the original map flip instead. You can retry the beta.");
       updateAddress();
     }
   }
