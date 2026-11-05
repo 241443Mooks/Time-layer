@@ -275,6 +275,11 @@
     selection = event.detail;
     syncSelection();
   });
+  window.addEventListener("time-layer-map-revealed", () => {
+    if (map && ready && toggle.checked) {
+      window.requestAnimationFrame(() => map.resize());
+    }
+  });
 
   if (new URLSearchParams(window.location.search).get("aligned") === "1") {
     toggle.checked = true;
