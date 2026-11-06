@@ -82,4 +82,18 @@ The **earliest known** card is a query over eligible *claims with scope*. The ea
 
 Do not promise a comprehensive house genealogy or exact year built from an address, publish current residents' personal details, infer private residence ownership history, merge ambiguous places, claim global coverage, invent a founding year, or rank an uncited colourful story above specialist verified evidence.
 
-**Implementation status:** The adaptive planner, address search, earliest-history synthesis and complete typed chronology described here are *design/research only*. The existing v0.8 in-place time hopping and OHM nearby sample are already live separately.
+## v0.9 implementation, 6 November 2026
+
+**First working vertical slice implemented and checked against the live deployment:**
+
+- `GET /api/place-history?place=Q62378` returns a deliberately bounded source-backed chronology for Tower of London. Seven documented chapters include Roman site context (around AD 200), White Tower construction (1078–1100), 13th-century expansion, the Tower Mint, 1381, the Mint's move and the Grand Storehouse fire. Each card has an original source and a typed historical date with a year-jump value. The earliest on-site evidence and earliest construction evidence are separately described. *They are the earliest evidence included in this curated pilot, not global completeness claims.*
+- `GET /api/place-history?demo=home` returns a distinct **anonymous house research route** based on Historic England and The National Archives. It explains building plans, first map appearances, tithe maps and valuation survey records. Its earliest construction date is deliberately **not established**, with no fabricated home, address, owner, or occupancy data. The date of a class of records is **not** a date of any house.
+- Other named entities receive a **no verified chronology yet** status instead of automatically inventing a history from nearby OpenHistoricalMap elements or general Wikipedia content.
+- The source-backed UI sits after the compact time traveller, ahead of the wider Warren. It contains two short source-credited earliest-evidence facts and a horizontally swipeable sequence of moment cards. Tapping a chapter's year dispatches the existing in-place year control; full date basis and original reference live behind a small per-card disclosure.
+- Live routes and HTML controls were checked; a focused simulated-DOM interaction tested Tower → jump to 1300 → house research route → return → unresearched location, including seven dated chapters, four source research methods, two distinct earliest concepts, and empty-state behaviour.
+
+**Not done:** general automated place typing; accurate house address/UPRN resolution; dynamic multi-archive search; provenance-aware record reconciliation; worldwide timelines; personal property records. These belong to a later staged engineering project, not to v0.9.
+
+**Next engineering step:** build a source-adapter and claim schema that can populate a chronology from at least two *independent* providers with conflicting dates, deduplication, explicit selection policies and durable tests. The `docs/adaptive-history-codex-brief.md` document specifies that larger Codex-sized phase.
+
+
