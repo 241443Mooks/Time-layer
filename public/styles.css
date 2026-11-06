@@ -362,3 +362,9 @@
 .evidence-feature-content{border-top:1px solid #dbe5da;padding:8px 12px 12px}
 .evidence-feature-content .evidence-source-link{display:inline-block;margin:10px 14px 0 0;font-size:.75rem}
 .evidence-feature{padding:7px 0;border:0}
+
+.time-hop-find-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:5px}
+.time-hop-find{background:transparent;border:0;padding:2px 1px;color:#2b684d;font-size:.77rem;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.time-hop-find:disabled{opacity:.65;cursor:progress}
+.time-hop-find-row>span{font-size:.72rem;color:#667e6e}
+.discovery-map-shortcut{display:inline-block;color:#28614c;font-size:.79rem;font-weight:800;text-decoration:underline;text-underline-offset:3px;margin:0 0 11px}
