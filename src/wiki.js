@@ -203,6 +203,26 @@ function fileKey(filename) {
   return String(filename || "").replace(/_/g, " ").normalize("NFC").toLowerCase();
 }
 
+// Historical imagery must carry an interpretable creation date. Archive
+// metadata often includes HTML, qualifiers and periods; reject vague centuries
+// and long ranges instead of manufacturing a precise date.
+function imageCreationDate(value) {
+  const clean = htmlPlain(value).replace(/\u00a0/g, " ");
+  const between = clean.match(/^(?:between|from)\s+(\d{3,4})\s+(?:and|to)\s+(\d{3,4})\b/i);
+  if (between) {
+    const start = Number(between[1]), end = Number(between[2]);
+    return end >= start && end - start <= 20 ?
+      { start, end, precision: "range" } : null;
+  }
+  const approximate = /^(?:circa|c\.|ca\.|about|around)\s*/i.test(clean);
+  const stripped = clean.replace(/^(?:circa|c\.|ca\.|about|around)\s*/i, "");
+  const match = stripped.match(/^([1-2]\d{3})(?!\d)(?=$|[\s<,.;\-])/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  if (year < 1000 || year > 2026) return null;
+  return { start: year, end: year, precision: approximate ? "circa" : "year" };
+}
+
 function imageMetadata(page) {
   const file = page?.imageinfo?.[0];
   const meta = file?.extmetadata || {};
@@ -215,10 +235,12 @@ function imageMetadata(page) {
       !filePage.startsWith("https://commons.wikimedia.org/wiki/File:")) return null;
   const creator = htmlPlain(meta.Attribution?.value || meta.Artist?.value);
   const licenseUrl = meta.LicenseUrl?.value;
+  const dating = imageCreationDate(meta.DateTimeOriginal?.value);
   return {
     filePage,
     creator: creator || "See the original file for creator credit",
     license,
+    created: dating,
     licenseUrl: typeof licenseUrl === "string" &&
       /^https:\/\/(?:creativecommons\.org|www\.creativecommons\.org)\//.test(licenseUrl)
         ? licenseUrl : null
@@ -258,7 +280,7 @@ async function attachVerifiedMedia(place, summary, featured, near) {
         thumbnail: request.url,
         alt: "Illustration from Wikimedia Commons related to " + (request.subject.label || request.subject.title || place.label),
         ...info,
-        caveat: "Image creation date not established; not necessarily a view from the chosen year."
+        caveat: "The creation date is not proof of the date of the scene depicted."
       };
     }
   }
