@@ -221,7 +221,9 @@
   function renderFeatured(leads) {
     featuredTrailContent.replaceChildren();
     const lead = Array.isArray(leads) ? leads.find(item =>
-      safePlace(item) && item.id !== currentId && item.kind === "source-backed-lead") : null;
+      safePlace(item) && item.id !== currentId && item.kind === "source-backed-lead" &&
+      (!Number.isInteger(item.periodStart) || activeYear >= item.periodStart) &&
+      (!Number.isInteger(item.periodEnd) || activeYear <= item.periodEnd)) : null;
     featuredTrail.hidden = !lead;
     if (!lead) return;
     const button = make("button", "featured-trail-button");
@@ -233,8 +235,12 @@
     button.appendChild(make("span", "", lead.description || "A documented connection worth investigating."));
     button.addEventListener("click", () => navigate(lead));
     featuredTrailContent.appendChild(button);
-    if (lead.evidenceUrl === "https://en.wikipedia.org/wiki/Castlefield") {
-      const link = make("a", "featured-trail-source", "Why are these places connected? Read the source ↗");
+    if (lead.evidenceUrl === "https://en.wikipedia.org/wiki/Castlefield" ||
+        lead.evidenceUrl === "https://www.wikidata.org/wiki/Q56739974") {
+      const label = lead.evidenceUrl.includes("wikidata.org") ?
+        "Explore the historical bridge's separate Wikidata record ↗" :
+        "Why are these places connected? Read the source ↗";
+      const link = make("a", "featured-trail-source", label);
       link.href = lead.evidenceUrl;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
@@ -336,6 +342,7 @@
   function displayDetail(data) {
     if (!data || !safePlace(data.place)) return;
     const place = data.place;
+    if (activeDetail && activeDetail.place.id !== place.id) periodMedia = [];
     title.textContent = place.label;
     description.textContent = place.description;
     const context = data.summary?.excerpt ||
