@@ -7,9 +7,11 @@
   const buttons = document.getElementById("time-hop-buttons");
   const events = document.getElementById("time-hop-events");
   const eventButtons = document.getElementById("time-hop-event-buttons");
+  const find = document.getElementById("time-hop-find");
+  const findStatus = document.getElementById("time-hop-find-status");
   const place = document.getElementById("hops-place");
   const label = document.getElementById("hops-year");
-  if (!buttons || !events || !eventButtons || !place || !label) return;
+  if (!buttons || !events || !eventButtons || !place || !label || !find || !findStatus) return;
 
   let current = { year: 1900, placeId: null, view: "centre" };
   const START = -3999, END = 2026;
@@ -41,6 +43,14 @@
     }
   }
 
+  find.addEventListener("click", () => {
+    find.disabled = true;
+    findStatus.textContent = "Checking…";
+    window.dispatchEvent(new CustomEvent("time-layer-request-pins", {
+      detail: { key: current.placeId || current.view, year: current.year }
+    }));
+  });
+
   window.addEventListener("time-layer-selection", event => {
     const detail = event.detail;
     if (!detail || !Number.isInteger(detail.year)) return;
@@ -54,6 +64,8 @@
     if (changed) {
       events.hidden = true;
       eventButtons.replaceChildren();
+      find.disabled = false;
+      findStatus.textContent = "";
     }
   });
 
@@ -86,5 +98,16 @@
       eventButtons.appendChild(button);
     }
     events.hidden = eventButtons.children.length === 0;
+    find.disabled = false;
+    findStatus.textContent = events.hidden ?
+      "No named dates found in this limited sample." : "";
+  });
+
+  window.addEventListener("time-layer-pins-error", event => {
+    const detail = event.detail || {};
+    if (detail.key !== (current.placeId || current.view) ||
+        detail.year !== current.year) return;
+    find.disabled = false;
+    findStatus.textContent = "Dates unavailable. Try again.";
   });
 })();
