@@ -220,6 +220,18 @@ function fileKey(filename) {
 // and long ranges instead of manufacturing a precise date.
 function imageCreationDate(value) {
   const clean = htmlPlain(value).replace(/\u00a0/g, " ");
+  // "17th century" is a period, not a point at 1700 or 1800.
+  // Metadata often contains <sup>th</sup> or qualifiers and extra HTML.
+  const century = clean.match(/^(?:(?:early|mid|late|circa|c\.)[-\s]+)?(\d{1,2})\s*(?:st|nd|rd|th)\s+century\b/i);
+  if (century) {
+    const number = Number(century[1]);
+    if (number >= 1 && number <= 21) {
+      const start = (number - 1) * 100 + 1;
+      const end = Math.min(2026, number * 100);
+      return { start, end, precision: "century", label: number + ((number % 100 >= 11 && number % 100 <= 13) ? "th" :
+        (number % 10 === 1 ? "st" : number % 10 === 2 ? "nd" : number % 10 === 3 ? "rd" : "th")) + " century" };
+    }
+  }
   const between = clean.match(/^(?:between|from)\s+(\d{3,4})\s+(?:and|to)\s+(\d{3,4})\b/i);
   if (between) {
     const start = Number(between[1]), end = Number(between[2]);
@@ -304,6 +316,11 @@ async function attachVerifiedMedia(place, summary, featured, near) {
 function imageMatchesYear(media, year) {
   const date = media?.created;
   if (!date || !Number.isInteger(date.start) || !Number.isInteger(date.end)) return false;
+  if (date.precision === "century") {
+    // Century-scale records are discoverable anywhere within their own
+    // century, but have no invented event year or +/-20y spillover.
+    return year >= date.start && year <= date.end;
+  }
   const gap = year < date.start ? date.start - year : year > date.end ? year - date.end : 0;
   return gap <= 20; // Date-near, not "made in the chosen year".
 }
@@ -312,7 +329,8 @@ function mediaScore(media, year, nameMatch) {
   const date = media.created;
   const gap = year < date.start ? date.start - year : year > date.end ? year - date.end : 0;
   return 100 - 4 * gap + (nameMatch ? 15 : 0) +
-    (date.precision === "year" ? 5 : 0);
+    (date.precision === "year" ? 5 : 0) -
+    (date.precision === "century" ? 45 : 0);
 }
 
 export async function periodImages(request) {
