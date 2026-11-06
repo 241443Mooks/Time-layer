@@ -42,7 +42,7 @@ const tower = Object.freeze({
   statusNote: "A small, sourced chronology selected for this pilot, not every event in the Tower's history.",
   earliestOnSite: {
     label: "Roman city wall · around 200 CE",
-    start: 190, end: 210, precision: "circa",
+    start: 200, end: 200, precision: "circa",
     description: "Roman defensive walls preceded the Norman fortress at this location.",
     source: SOURCE.roman,
     qualifier: "Earliest dated on-site evidence included in this pilot; not the earliest human activity."
@@ -57,7 +57,7 @@ const tower = Object.freeze({
   chapters: [
     {
       id: "roman-wall", title: "Before the fortress", dateLabel: "Around 200 CE",
-      start: 190, end: 210, precision: "circa", jumpYear: 200, type: "Site history",
+      start: 200, end: 200, precision: "circa", jumpYear: 200, type: "Site history",
       text: "A Roman city wall crossed this site long before the Norman castle.",
       source: SOURCE.roman, basis: "Estimated construction period of wall"
     },
@@ -75,7 +75,7 @@ const tower = Object.freeze({
     },
     {
       id: "mint", title: "Coins behind the walls", dateLabel: "Around 1279",
-      start: 1270, end: 1285, precision: "circa", jumpYear: 1279, type: "Institution",
+      start: 1279, end: 1279, precision: "circa", jumpYear: 1279, type: "Institution",
       text: "The Royal Mint moved into the security of the Tower.",
       source: SOURCE.mint, basis: "Approximate start of institutional activity"
     },
