@@ -100,6 +100,26 @@ Added an optional **Keep views aligned · BETA** switch just above the map. When
 
 See [Discovery Warren roadmap](docs/discovery-warren.md). Authentic georeferenced scans, museum artefact media, audio, video and a multi-source knowledge graph are **future work**, not yet included in this version.
 
+### Version 0.7 — Date-matched imagery and verified archive map items (6 November 2026)
+
+From real Android feedback: a **2018 photo of London Bridge station** dominated a page showing **1735**, and the old-map link led only to an archive directory. Both were misleading or unhelpful.
+
+**Changes shipped:**
+
+- A picture only displays in the Discovery Warren if it has a Commons-verified reuse licence **and an interpretable creation date within 20 years of the selected year**. Date-less files, vague centuries, and broad ambiguous creation ranges do not qualify. The media caption displays the *real creation date and year difference*; this is **not** a claim about when a scene was depicted.
+- Source-specific Commons candidates are found through bounded, place-named historical artwork searches (`GET /api/period-images?id=Q...&year=...`). Candidate files are vetted for title/place match, individual licence, creation date, safe image URLs and closeness to the year, then ranked. This is a lead list, not proof of exact historical depiction. Requests are debounced client-side and cached, and failure does not block the main place profile.
+- Existing hero, featured and nearby images are re-filtered when the year changes. **No eligible image means no image**, not a modern decorative picture.
+- The old **generic historical-map archive directory link is gone**. Source records are presented only when the exact place entity, geographical coverage and item year have been verified. The first manually verified example is [Rocque's 1746 London sheet 2E](https://www.londonpicturearchive.org.uk/view-item?i=30771), record 33549 at the London Archives: its record expressly lists **London Bridge**. The original-map link appears only for [the separate 1209–1831 bridge entity](https://www.wikidata.org/wiki/Q56739974) within 15 years of 1746, with the actual map date/difference shown. **The source image is not copied into Time-Layer.**
+- London Bridge railway station is a separate Wikidata entity (Q801125). If exploring that station in the bridge's historically relevant years, a dated source-identity lead points to the earlier bridge without conflating the two subjects.
+
+**Live source examples:**
+
+- `/api/period-images?id=Q801125&year=1735` returned **zero** period images. The station's default Wikimedia photo has a documented 2018 creation date; it must not appear on a 1735 page.
+- `/api/period-images?id=Q56739974&year=1735` returned a Commons public-domain Samuel Scott artwork created **1753**, 18 years after the selected date, explicitly labelled a nearby-period *research lead*, not a view proven to depict 1735.
+- The 1746 London Bridge sheet is **11 years later** than a 1735 selection. A direct source link is allowed with that explicit difference; 1500 or a different named entity shows no map link.
+
+The 20-year image and 15-year map cutoffs are transparent, conservative **pilot tolerances**, not historical standards or claims of accuracy. They can be tightened following review. See [source-matching and ranking rules](docs/source-matching.md) for the source registry, gates and next adapters (NLS sheet metadata, Library of Congress, Europeana, archaeology and museum objects). The Commons and map-link logic passed focused date, selection and navigation tests; Android visual verification is still needed.
+
 ### Intentional limits
 
 - **Panning/zooming the two embeds is independent.** Choosing a viewpoint recentres both, but dragging one does not automatically drag the other. This is a first test of the idea, not yet a fully synchronised map engine.
