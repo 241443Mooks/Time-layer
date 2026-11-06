@@ -116,7 +116,56 @@
       </div>
     </section>
 
-    <section class="map-section" aria-label="Compare maps">
+    <section id="discovery" class="discovery-section" aria-labelledby="discover-heading">
+      <div class="discovery-head">
+        <p class="eyebrow dark">04 / Discover what we know</p>
+        <h2 id="discover-heading">Follow a discovery</h2>
+        <p class="helper">Dated images, related places and source-backed leads.</p>
+      </div>
+      <a class="discovery-map-shortcut" href="#map-explorer">View the map ↓</a>
+      <div class="discovery-panel">
+        <div class="discovery-overview">
+          <figure id="discovery-media" class="discovery-media" hidden>
+            <img id="discovery-image" alt="" loading="lazy" decoding="async">
+            <figcaption><strong id="discovery-image-date"></strong><span id="discovery-image-credit"></span><a id="discovery-image-source" target="_blank" rel="noopener noreferrer">Creator, source &amp; licence ↗</a><small>Artwork creation date is not necessarily the depicted date.</small></figcaption>
+          </figure>
+          <div class="discovery-intro-copy">
+            <p class="discovery-status" id="discovery-status" role="status" aria-live="polite">Choose a place to explore its historical context.</p>
+            <h3 id="discovery-title">Manchester</h3>
+            <p class="discovery-description" id="discovery-description"></p>
+            <p class="discovery-lead" id="discovery-lead"></p>
+            <details id="discovery-about" class="discovery-about">
+              <summary>Read more about this place</summary>
+              <p class="discovery-summary" id="discovery-summary"></p>
+            </details>
+            <div class="discovery-links">
+              <a id="discovery-wikipedia" target="_blank" rel="noopener noreferrer" hidden>Read on Wikipedia ↗</a>
+              <a id="discovery-wikidata" target="_blank" rel="noopener noreferrer" hidden>View Wikidata record ↗</a>
+            </div>
+          </div>
+        </div>
+        <section id="featured-trail" class="featured-trail" aria-label="Featured historical connection" hidden>
+          <p class="featured-eyebrow">A THREAD TO FOLLOW · SOURCE-LINKED LEAD</p>
+          <div id="featured-trail-content"></div>
+        </section>
+        <section id="discovery-gallery" class="discovery-gallery" aria-label="Explore pictured nearby subjects" hidden>
+          <h4>Other doors to explore</h4>
+          <p class="helper">Only images with a verified creation date near the selected year are shown here.</p>
+          <div id="discovery-gallery-content" class="discovery-gallery-content"></div>
+        </section>
+        <details class="discovery-nearby" id="discovery-nearby">
+          <summary>See more nearby subjects <span id="discovery-connection-count"></span></summary>
+          <p>Some links are explicitly supported by the named source; others are geographically nearby Wikipedia articles. None of these connections are automatically dated to your selected year.</p>
+          <ul class="discovery-connections" id="discovery-connections"></ul>
+        </details>
+        <div class="discovery-breadcrumbs" id="discovery-breadcrumbs" hidden>
+          <p>YOUR EXPLORATION TRAIL</p>
+          <ol id="discovery-trail"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="map-explorer" class="map-section" aria-label="Compare maps">
       <div class="map-head">
         <div>
           <p class="eyebrow dark">03 / Then versus now</p>
@@ -169,54 +218,6 @@
         <a id="historical-map-link" target="_blank" rel="noopener noreferrer">View the actual map sheet ↗</a>
         <small id="historical-map-credit"></small>
       </section>
-    </section>
-
-    <section id="discovery" class="discovery-section" aria-labelledby="discover-heading">
-      <div class="discovery-head">
-        <p class="eyebrow dark">04 / Discover what we know</p>
-        <h2 id="discover-heading">Every place has connections.</h2>
-        <p class="helper">Explore dated historical imagery and source-linked discoveries. Missing evidence stays missing.</p>
-      </div>
-      <div class="discovery-panel">
-        <div class="discovery-overview">
-          <figure id="discovery-media" class="discovery-media" hidden>
-            <img id="discovery-image" alt="" loading="lazy" decoding="async">
-            <figcaption><strong id="discovery-image-date"></strong><span id="discovery-image-credit"></span><a id="discovery-image-source" target="_blank" rel="noopener noreferrer">Creator, source &amp; licence ↗</a><small>Artwork creation date is not necessarily the depicted date.</small></figcaption>
-          </figure>
-          <div class="discovery-intro-copy">
-            <p class="discovery-status" id="discovery-status" role="status" aria-live="polite">Choose a place to explore its historical context.</p>
-            <h3 id="discovery-title">Manchester</h3>
-            <p class="discovery-description" id="discovery-description"></p>
-            <p class="discovery-lead" id="discovery-lead"></p>
-            <details id="discovery-about" class="discovery-about">
-              <summary>Read more about this place</summary>
-              <p class="discovery-summary" id="discovery-summary"></p>
-            </details>
-            <div class="discovery-links">
-              <a id="discovery-wikipedia" target="_blank" rel="noopener noreferrer" hidden>Read on Wikipedia ↗</a>
-              <a id="discovery-wikidata" target="_blank" rel="noopener noreferrer" hidden>View Wikidata record ↗</a>
-            </div>
-          </div>
-        </div>
-        <section id="featured-trail" class="featured-trail" aria-label="Featured historical connection" hidden>
-          <p class="featured-eyebrow">A THREAD TO FOLLOW · SOURCE-LINKED LEAD</p>
-          <div id="featured-trail-content"></div>
-        </section>
-        <section id="discovery-gallery" class="discovery-gallery" aria-label="Explore pictured nearby subjects" hidden>
-          <h4>Other doors to explore</h4>
-          <p class="helper">Only images with a verified creation date near the selected year are shown here.</p>
-          <div id="discovery-gallery-content" class="discovery-gallery-content"></div>
-        </section>
-        <details class="discovery-nearby" id="discovery-nearby">
-          <summary>See more nearby subjects <span id="discovery-connection-count"></span></summary>
-          <p>Some links are explicitly supported by the named source; others are geographically nearby Wikipedia articles. None of these connections are automatically dated to your selected year.</p>
-          <ul class="discovery-connections" id="discovery-connections"></ul>
-        </details>
-        <div class="discovery-breadcrumbs" id="discovery-breadcrumbs" hidden>
-          <p>YOUR EXPLORATION TRAIL</p>
-          <ol id="discovery-trail"></ol>
-        </div>
-      </div>
     </section>
 
     <section class="evidence-section" aria-label="Historical evidence">
