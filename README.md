@@ -135,6 +135,18 @@ The [adaptive place-history research design](docs/adaptive-place-history.md) now
 
 The [source-matching rules](docs/source-matching.md) and [Discovery Warren direction](docs/discovery-warren.md) track the wider opportunity: a typed place chronology with dated events, people, archaeological objects and original archive maps instead of an endless scroll of unrelated evidence.
 
+### Version 0.9 — An adaptive place-history pilot (6 November 2026)
+
+**First working slice, not a full automated research engine.** [Explore the Tower of London in 1100](https://time-layer.corneliuslobster.workers.dev/?place=Q62378&year=1100), or choose **How would a house work?** within the historical chapter panel to see a contrasting anonymous residential research route.
+
+- `GET /api/place-history?place=Q62378` returns seven curated Tower moments, each dated and credited to Historic Royal Palaces or Historic England. The chronology includes Roman wall context (around AD 200), White Tower construction (1078–1100), 13th-century expansion, the Royal Mint, 1381, the Mint's departure and the 1841 storehouse fire. These are a *partial source-backed pilot*, not a complete history.
+- Two distinct earliest-evidence summaries prevent conflating **Roman-era activity on the site** with **the Norman fortress's construction**. These are the earliest records selected for this pilot, not a claim that the Tower site has no earlier history.
+- The accompanying `GET /api/place-history?demo=home` responds with four research routes—building plans, first mapped appearance, tithe surveys and valuation records—using general Historic England and The National Archives sources. **No particular house, owner, build date or resident is inferred.** The earliest date for a real home remains unknown until appropriately researched.
+- Other places show **No verified chronology here yet**, rather than a fabricated generic history. The mobile interface uses a compact place-history header, two brief source facts and a sideways-scrollable chapter deck. Dated chapters can jump the global year control in-place; source explanations expand individually.
+- Live route responses and page markup were checked; a focused simulated interaction test passed Tower → jump to 1300 → house-demo → return → unknown place.
+
+The [adaptive place-history design](docs/adaptive-place-history.md) captures future provider selection and typed claims. A [staged Codex engineering brief](docs/adaptive-history-codex-brief.md) covers the *later* work: source schemas, multi-provider reconciliation, compliant home/address research, durable tests, and an in-app knowledge graph. **Those general-engine features are not implemented yet.**
+
 ### Intentional limits
 
 - **Panning/zooming the two embeds is independent.** Choosing a viewpoint recentres both, but dragging one does not automatically drag the other. This is a first test of the idea, not yet a fully synchronised map engine.
