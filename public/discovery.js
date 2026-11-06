@@ -17,6 +17,7 @@
   const heroMedia = document.getElementById("discovery-media");
   const heroImage = document.getElementById("discovery-image");
   const heroCredit = document.getElementById("discovery-image-credit");
+  const heroDate = document.getElementById("discovery-image-date");
   const heroSource = document.getElementById("discovery-image-source");
   const gallery = document.getElementById("discovery-gallery");
   const galleryContent = document.getElementById("discovery-gallery-content");
@@ -36,6 +37,40 @@
   let currentId = null;
   let requestVersion = 0;
   let searchRequest = null;
+  let activeYear = Number(new URLSearchParams(window.location.search).get("year")) || 1900;
+  let activeDetail = null;
+  const periodMediaCache = new Map();
+  let periodMedia = [];
+  let mediaTimer = null;
+  let mediaRequestSerial = 0;
+
+  function dateGap(media) {
+    const date = media?.created;
+    if (!date || !Number.isInteger(date.start) || !Number.isInteger(date.end) ||
+        date.end < date.start || date.end - date.start > 20) return Infinity;
+    return activeYear < date.start ? date.start - activeYear :
+      activeYear > date.end ? activeYear - date.end : 0;
+  }
+
+  function matchesChosenYear(media) {
+    return safeMedia(media) && dateGap(media) <= 20;
+  }
+
+  function createdCaption(media) {
+    const d = media.created;
+    const period = d.start === d.end ? String(d.start) : d.start + "–" + d.end;
+    const relative = dateGap(media);
+    const direction = activeYear < d.start ? "later" : activeYear > d.end ? "earlier" : "";
+    return "Created " + (d.precision === "circa" ? "c. " : "") + period +
+      (relative ? " · " + relative + " year" + (relative === 1 ? "" : "s") + " " + direction : " · chosen year");
+  }
+
+  function sortRelevant(candidates) {
+    return candidates.filter(candidate => matchesChosenYear(candidate.media))
+      .sort((a, b) => (b.priority - dateGap(b.media) * 5) -
+        (a.priority - dateGap(a.media) * 5)).slice(0, 3);
+  }
+
 
   function make(tag, className, text) {
     const el = document.createElement(tag);
@@ -124,6 +159,7 @@
     figure.appendChild(picture);
     const caption = make("figcaption");
     const info = make("span", "", attributionText(media));
+    caption.appendChild(make("strong", "", createdCaption(media)));
     caption.appendChild(info);
     const fileLink = make("a", "", "Image rights ↗");
     fileLink.href = media.filePage;
@@ -135,15 +171,18 @@
   }
 
   function renderHero(media) {
-    heroMedia.hidden = !safeMedia(media);
-    if (!safeMedia(media)) {
+    const eligible = matchesChosenYear(media);
+    heroMedia.hidden = !eligible;
+    if (!eligible) {
       heroImage.removeAttribute("src");
+      heroDate.textContent = "";
       heroCredit.textContent = "";
       heroSource.removeAttribute("href");
       return;
     }
     heroImage.src = media.thumbnail;
     heroImage.alt = media.alt || "Wikimedia illustration of this place";
+    heroDate.textContent = createdCaption(media);
     heroCredit.textContent = attributionText(media);
     heroSource.href = media.filePage;
   }
@@ -151,7 +190,8 @@
   function renderGallery(list) {
     galleryContent.replaceChildren();
     const pictured = Array.isArray(list) ?
-      list.filter(item => safePlace(item) && item.id !== currentId && safeMedia(item.media)).slice(0, 3) : [];
+      sortRelevant(list.filter(item => safePlace(item) && item.id !== currentId)
+        .map(item => ({...item, priority: 35}))) : [];
     gallery.hidden = !pictured.length;
     for (const item of pictured) {
       const card = make("article", "discovery-visual-card");
@@ -167,7 +207,8 @@
       button.appendChild(caption);
       button.addEventListener("click", () => navigate(item));
       card.appendChild(button);
-      card.appendChild(make("p", "discovery-visual-context", "Nearby subject · not matched to your year"));
+      card.appendChild(make("p", "discovery-visual-context",
+        createdCaption(item.media) + " · Nearby subject; depiction not verified."));
       const credit = make("a", "discovery-visual-credit", attributionText(item.media) + " ↗");
       credit.href = item.media.filePage;
       credit.target = "_blank";
@@ -185,7 +226,8 @@
     if (!lead) return;
     const button = make("button", "featured-trail-button");
     button.type = "button";
-    const art = imageFigure(lead.media, "featured-trail-media", lead.label);
+    const art = matchesChosenYear(lead.media) ?
+      imageFigure(lead.media, "featured-trail-media", lead.label) : null;
     if (art) featuredTrailContent.appendChild(art);
     button.appendChild(make("strong", "", "Explore " + lead.label));
     button.appendChild(make("span", "", lead.description || "A documented connection worth investigating."));
@@ -243,6 +285,54 @@
     }
   }
 
+  function renderMediaForYear() {
+    if (!activeDetail || activeDetail.place.id !== currentId) return;
+    const candidates = [];
+    if (activeDetail.summary?.media)
+      candidates.push({media: activeDetail.summary.media, priority: 120});
+    for (const entry of periodMedia)
+      candidates.push({media: entry.media, priority: 110, title: entry.title});
+    const ranked = sortRelevant(candidates);
+    renderHero(ranked[0]?.media);
+    renderFeatured(activeDetail.featured);
+    renderGallery(activeDetail.connections);
+  }
+
+  function schedulePeriodMedia() {
+    if (!currentId || !activeDetail || activeDetail.place.id !== currentId) return;
+    const id = currentId, year = activeYear;
+    const key = id + ":" + year;
+    if (mediaTimer) window.clearTimeout(mediaTimer);
+    if (periodMediaCache.has(key)) {
+      periodMedia = periodMediaCache.get(key);
+      renderMediaForYear();
+      return;
+    }
+    periodMedia = [];
+    renderMediaForYear();
+    const token = ++mediaRequestSerial;
+    // Coalesce rapid slider moves rather than repeatedly searching Commons.
+    mediaTimer = window.setTimeout(async () => {
+      mediaTimer = null;
+      try {
+        const response = await fetch("/api/period-images?id=" + encodeURIComponent(id) +
+          "&year=" + encodeURIComponent(String(year)), {
+          headers: { Accept: "application/json" }
+        });
+        const data = await response.json();
+        if (!response.ok || !Array.isArray(data.images)) return;
+        periodMediaCache.set(key, data.images.slice(0, 3));
+        if (periodMediaCache.size > 18)
+          periodMediaCache.delete(periodMediaCache.keys().next().value);
+        if (token !== mediaRequestSerial || currentId !== id || activeYear !== year) return;
+        periodMedia = data.images.slice(0, 3);
+        renderMediaForYear();
+      } catch (_error) {
+        // A missing archive search result should never obstruct place browsing.
+      }
+    }, 320);
+  }
+
   function displayDetail(data) {
     if (!data || !safePlace(data.place)) return;
     const place = data.place;
@@ -254,12 +344,12 @@
     summary.textContent = context;
     about.hidden = context.length <= 245;
     about.open = false;
-    renderHero(data.summary?.media);
+    activeDetail = data;
+    renderMediaForYear();
     setLink(wikidata, place.wikidataUrl);
     setLink(wikipedia, data.summary?.link);
-    renderFeatured(data.featured);
-    renderGallery(data.connections);
     renderConnections(data.connections);
+    schedulePeriodMedia();
     discoveryStatus.textContent = "General historical and geographical context from Wikimedia. " +
       "These links are not filtered to your selected year." +
       (data.warnings?.length ? " Some sources are temporarily unavailable." : "");
@@ -272,6 +362,10 @@
     summary.textContent = "";
     lead.textContent = "";
     about.hidden = true;
+    periodMedia = [];
+    activeDetail = null;
+    if (mediaTimer) window.clearTimeout(mediaTimer);
+    mediaRequestSerial++;
     renderHero(null);
     gallery.hidden = true;
     galleryContent.replaceChildren();
@@ -380,6 +474,9 @@
 
   window.addEventListener("time-layer-selection", event => {
     const selection = event.detail || {};
+    const nextYear = Number(selection.year);
+    const yearChanged = Number.isInteger(nextYear) && nextYear !== activeYear;
+    if (Number.isInteger(nextYear)) activeYear = nextYear;
     if (restoring && selection.view !== "world" && !currentId) return;
     const id = selection.placeId;
     if (id && id !== currentId) {
@@ -394,6 +491,8 @@
         remember(place);
         loadDetail(id);
       }
+    } else if (yearChanged && currentId && activeDetail) {
+      schedulePeriodMedia();
     }
   });
 
