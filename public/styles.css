@@ -352,3 +352,13 @@
  .evidence-list-details>summary,.evidence-method>summary,.evidence-footnote-notes>summary{padding:11px 12px}
  .evidence-panel .evidence-body{padding:12px}
 }
+
+/* Keep source details in Time-Layer until the visitor asks to open the archive. */
+.evidence-feature-card{border:1px solid #dbe5da;background:#fffdf9;border-radius:5px}
+.evidence-feature-card>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:8px 11px;color:#265943}
+.evidence-feature-card>summary::-webkit-details-marker{display:none}
+.evidence-feature-card>summary strong{font-weight:750;font-size:.88rem}
+.evidence-feature-mini-date{font-size:.71rem;color:#67796d;white-space:nowrap}
+.evidence-feature-content{border-top:1px solid #dbe5da;padding:8px 12px 12px}
+.evidence-feature-content .evidence-source-link{display:inline-block;margin:10px 14px 0 0;font-size:.75rem}
+.evidence-feature{padding:7px 0;border:0}
