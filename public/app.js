@@ -49,7 +49,7 @@ const journeyDone = document.getElementById("journey-done");
 const mapDisclosure = document.getElementById("map-disclosure");
 journeyDone.addEventListener("click", () => {
   journeyControls.open = false;
-  document.getElementById("place-title").scrollIntoView({ block: "start", behavior: "smooth" });
+  document.getElementById("discover-heading").scrollIntoView({ block: "start", behavior: "smooth" });
 });
 mapDisclosure.addEventListener("toggle", () => {
   if (mapDisclosure.open) {
