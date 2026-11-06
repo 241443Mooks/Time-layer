@@ -1,4 +1,4 @@
-import { placeSearch, placeDetail, resolvePlace } from "./wiki.js";
+import { placeSearch, placeDetail, periodImages, resolvePlace } from "./wiki.js";
 
 // Read-only, bounded OpenHistoricalMap evidence proxy.
 // Browsers have historically encountered CORS issues contacting OHM Overpass.
@@ -139,6 +139,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/place-search") return placeSearch(request);
     if (url.pathname === "/api/place") return placeDetail(request);
+    if (url.pathname === "/api/period-images") return periodImages(request);
     if (url.pathname === "/api/heritage") {
       return heritageResponse(request);
     }
