@@ -149,9 +149,10 @@
   function concise(text) {
     if (typeof text !== "string") return "";
     const clean = text.replace(/\s+/g, " ").trim();
-    if (clean.length <= 245) return clean;
-    const words = clean.slice(0, 242);
-    return words.slice(0, Math.max(170, words.lastIndexOf(" "))) + "…";
+    if (clean.length <= 155) return clean;
+    const words = clean.slice(0, 155);
+    const cut = words.lastIndexOf(" ");
+    return words.slice(0, cut > 115 ? cut : 155) + "…";
   }
 
   function attributionText(media) {
@@ -360,7 +361,7 @@
       "No short English Wikipedia introduction is available for this place. Its Wikidata record may still have useful references.";
     lead.textContent = concise(context);
     summary.textContent = context;
-    about.hidden = context.length <= 245;
+    about.hidden = context.length <= 155;
     about.open = false;
     activeDetail = data;
     renderMediaForYear();
@@ -368,9 +369,8 @@
     setLink(wikipedia, data.summary?.link);
     renderConnections(data.connections);
     schedulePeriodMedia();
-    discoveryStatus.textContent = "General historical and geographical context from Wikimedia. " +
-      "These links are not filtered to your selected year." +
-      (data.warnings?.length ? " Some sources are temporarily unavailable." : "");
+    discoveryStatus.textContent = "Wikimedia context · place links may span different periods." +
+      (data.warnings?.length ? " Some sources unavailable." : "");
   }
 
   async function loadDetail(id) {
