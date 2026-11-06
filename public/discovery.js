@@ -47,7 +47,12 @@
   function dateGap(media) {
     const date = media?.created;
     if (!date || !Number.isInteger(date.start) || !Number.isInteger(date.end) ||
-        date.end < date.start || date.end - date.start > 20) return Infinity;
+        date.end < date.start) return Infinity;
+    if (date.precision === "century") {
+      // A broad record belongs to its century; don't move it to 1700/1800.
+      return activeYear >= date.start && activeYear <= date.end ? 0 : Infinity;
+    }
+    if (date.end - date.start > 20) return Infinity;
     return activeYear < date.start ? date.start - activeYear :
       activeYear > date.end ? activeYear - date.end : 0;
   }
@@ -58,6 +63,10 @@
 
   function createdCaption(media) {
     const d = media.created;
+    if (d.precision === "century") {
+      return "Created sometime in the " + d.label + " (" +
+        d.start + "–" + d.end + " CE) · precise year unknown";
+    }
     const period = d.start === d.end ? String(d.start) : d.start + "–" + d.end;
     const relative = dateGap(media);
     const direction = activeYear < d.start ? "later" : activeYear > d.end ? "earlier" : "";
@@ -67,8 +76,10 @@
 
   function sortRelevant(candidates) {
     return candidates.filter(candidate => matchesChosenYear(candidate.media))
-      .sort((a, b) => (b.priority - dateGap(b.media) * 5) -
-        (a.priority - dateGap(a.media) * 5)).slice(0, 3);
+      .sort((a, b) => ((b.priority || 0) - dateGap(b.media) * 5 -
+        (b.media.created.precision === "century" ? 45 : 0)) -
+        ((a.priority || 0) - dateGap(a.media) * 5 -
+        (a.media.created.precision === "century" ? 45 : 0))).slice(0, 3);
   }
 
 
