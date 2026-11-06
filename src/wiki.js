@@ -222,7 +222,9 @@ function imageCreationDate(value) {
   const clean = htmlPlain(value).replace(/\u00a0/g, " ");
   // "17th century" is a period, not a point at 1700 or 1800.
   // Metadata often contains <sup>th</sup> or qualifiers and extra HTML.
-  const century = clean.match(/^(?:(?:early|mid|late|circa|c\.)[-\s]+)?(\d{1,2})\s*(?:st|nd|rd|th)\s+century\b/i);
+  // Preserve a whole named century. "early/mid/late" needs a separately
+  // documented convention and is not silently widened to all 100 years.
+  const century = clean.match(/^(?:(?:circa|c\.)[-\s]+)?(\d{1,2})\s*(?:st|nd|rd|th)\s+century\b/i);
   if (century) {
     const number = Number(century[1]);
     if (number >= 1 && number <= 21) {
