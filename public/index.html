@@ -13,6 +13,7 @@
   <script src="./historic-maps.js" defer></script>
   <script src="./shared-map.js" defer></script>
   <script src="./time-hops.js" defer></script>
+  <script src="./place-history.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -114,6 +115,31 @@
       <div id="time-hop-events" class="time-hop-events" hidden>
         <span>Recorded changes nearby · limited sample</span>
         <div id="time-hop-event-buttons" class="time-hop-event-buttons"></div>
+      </div>
+    </section>
+
+    <section id="history-explorer" class="history-explorer" aria-labelledby="history-heading">
+      <div class="history-header">
+        <div>
+          <span class="eyebrow dark">THE HISTORY OF THIS PLACE</span>
+          <h2 id="history-heading">Discover its story</h2>
+          <p id="history-description" class="history-description">Find the earliest evidence and follow a dated chapter.</p>
+        </div>
+        <div class="history-examples">
+          <a href="?place=Q62378&amp;year=1100" class="history-example-link">Try the Tower</a>
+          <button type="button" id="history-home-demo">How would a house work?</button>
+          <button type="button" id="history-return" hidden>Return to your place</button>
+        </div>
+      </div>
+      <div id="history-loading" class="history-loading" role="status" aria-live="polite">Checking for a verified place history…</div>
+      <div id="history-content" class="history-content" hidden>
+        <div class="history-proof-grid" id="history-proof-grid"></div>
+        <div class="history-chapter-heading">
+          <h3 id="history-chapter-title">Explore the chapters</h3>
+          <span id="history-chapter-count"></span>
+        </div>
+        <div id="history-chapters" class="history-chapters" aria-label="Historical chapters, scroll horizontally"></div>
+        <p id="history-caveat" class="history-caveat"></p>
       </div>
     </section>
 
