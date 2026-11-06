@@ -129,7 +129,9 @@
   function features(records) {
     // The main list must never show records dated after (or ending before)
     // the selected year. Unresolved dates need a separate research view.
-    return records.filter(record => dateState(record.tags, selected.year) === "compatible")
+    return records.filter(record =>
+      dateState(record.tags, selected.year) === "compatible" &&
+      displayName(record) !== "Unnamed mapped feature")
       .sort((a, b) => {
         // Newest recorded start first; never use alphabetical order as the
         // primary sort for a historical timeline.
@@ -141,33 +143,34 @@
 
   function renderFeature(record) {
     const item = make("li", "evidence-feature");
-    const heading = make("div", "evidence-feature-heading");
-    const link = make("a", "", displayName(record));
-    link.href = recordUrl(record);
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    heading.appendChild(link);
-    const state = dateState(record.tags, selected.year);
-    const wording = {
-      compatible: "Dates compatible",
-      unresolved: "Date unclear",
-      "before-start": "Recorded start is later",
-      "after-end": "Recorded end is earlier"
-    };
-    heading.appendChild(make("span", "evidence-state state-" + state, wording[state]));
-    item.appendChild(heading);
-    item.appendChild(make("p", "evidence-feature-type", featureType(record.tags)));
-    item.appendChild(make("p", "evidence-feature-dates", rawDates(record.tags)));
+    const details = make("details", "evidence-feature-card");
+    const head = make("summary", "evidence-feature-short");
+    head.appendChild(make("strong", "", displayName(record)));
+    head.appendChild(make("span", "evidence-feature-mini-date",
+      "From " + (record.tags.start_date || "undated")));
+    details.appendChild(head);
+
+    const content = make("div", "evidence-feature-content");
+    content.appendChild(make("p", "evidence-feature-type", featureType(record.tags)));
+    content.appendChild(make("p", "evidence-feature-dates", rawDates(record.tags)));
     const cited = record.tags.source;
-    if (cited) item.appendChild(make("p", "evidence-feature-source", "Source tag: " + String(cited).slice(0, 190)));
+    if (cited) content.appendChild(make("p", "evidence-feature-source",
+      "Source tag: " + String(cited).slice(0, 190)));
+    const recordLink = make("a", "evidence-source-link", "View original OHM record ↗");
+    recordLink.href = recordUrl(record);
+    recordLink.target = "_blank";
+    recordLink.rel = "noopener noreferrer";
+    content.appendChild(recordLink);
     const src = sourceUrl(record.tags);
     if (src) {
-      const srcLink = make("a", "evidence-source-link", "Open source reference ↗");
-      srcLink.href = src;
-      srcLink.target = "_blank";
-      srcLink.rel = "noopener noreferrer";
-      item.appendChild(srcLink);
+      const sourceLink = make("a", "evidence-source-link", "Open cited source ↗");
+      sourceLink.href = src;
+      sourceLink.target = "_blank";
+      sourceLink.rel = "noopener noreferrer";
+      content.appendChild(sourceLink);
     }
+    details.appendChild(content);
+    item.appendChild(details);
     return item;
   }
 
@@ -218,12 +221,15 @@
       "A compatible date does not prove a feature existed in that year. " +
       "Listing/registration dates from other archives will not be treated as construction dates.";
     featuresList.replaceChildren();
+    const namedFeatures = features(matching);
     if (matching.length === 0) {
       emptyList(featuresList,
-        "No date-compatible records found for " + yearLabel(selected.year) +
-        " in this limited sample. This does NOT mean the place was uninhabited or undocumented; older records may be outside this query.");
+        "No compatible features found in this limited historical sample.");
+    } else if (!namedFeatures.length) {
+      emptyList(featuresList,
+        "Date-compatible records exist, but none has a useful place name in this sample.");
     } else {
-      features(matching).forEach(record => featuresList.appendChild(renderFeature(record)));
+      namedFeatures.forEach(record => featuresList.appendChild(renderFeature(record)));
     }
     eventsList.replaceChildren();
     const events = datedEvents(records);
