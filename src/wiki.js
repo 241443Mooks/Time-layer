@@ -148,6 +148,18 @@ async function nearbyWikipedia(lat, lng, id) {
 // A tiny, explicitly source-backed research trail to prove the concept.
 // This is NOT an automatically inferred historical relationship.
 async function researchedTrail(id) {
+  if (id === "Q801125") {
+    const bridge = await resolvePlace("Q56739974");
+    if (!bridge) return [];
+    return [{
+      ...bridge,
+      kind: "source-backed-lead",
+      description: "Historical alternative: the London Bridge that stood from 1209 to 1831 is a separate place from London Bridge railway station.",
+      evidenceUrl: "https://www.wikidata.org/wiki/Q56739974",
+      periodStart: 1209,
+      periodEnd: 1831
+    }];
+  }
   if (id !== "Q2308772") return [];
   const fort = await resolvePlace("Q3285089");
   if (!fort) return [];
