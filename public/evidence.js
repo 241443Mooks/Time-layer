@@ -10,6 +10,7 @@
   const teaser = document.getElementById("evidence-teaser");
   const coverage = document.getElementById("evidence-coverage");
   const featuresList = document.getElementById("evidence-features");
+  const featureSummary = document.getElementById("evidence-feature-summary");
   const eventsList = document.getElementById("evidence-events");
   const stats = {
     count: document.getElementById("evidence-count"),
@@ -65,9 +66,13 @@
 
   function displayName(record) {
     const tags = record.tags || {};
-    const name = tags["name:en"] || tags.name || tags["old_name"] ||
-      tags.historic || tags.building || tags.place || tags.railway || tags.waterway;
-    return name ? String(name).slice(0, 100) : "Unnamed mapped feature";
+    // Values such as building=yes are attributes, not names. Don't offer
+    // fake discoveries labelled "yes", "primary", or "residential".
+    const name = [tags["name:en"], tags.name, tags.old_name, tags.alt_name,
+      tags["old_name:en"]].find(value =>
+        typeof value === "string" && value.trim() &&
+        !/^(yes|no|true|false|1|primary|residential)$/i.test(value.trim()));
+    return name ? String(name).trim().slice(0, 100) : "Unnamed mapped feature";
   }
 
   function featureType(tags) {
@@ -176,10 +181,16 @@
         }
       }
     });
-    // A time traveller in 1000 BCE should not see dates from 1793 CE.
-    // Past starts/ends remain useful as events already recorded by that year.
-    return events.filter(event => event.year <= selected.year)
-      .sort((a,b) => b.year - a.year || a.name.localeCompare(b.name))
+    // Suppress generic and repeated values; use named source records for
+    // jumping through time. A record is a clue, not necessarily an event.
+    const seen = new Set();
+    return events.filter(event => {
+      if (event.year > selected.year || event.name === "Unnamed mapped feature") return false;
+      const key = event.year + "|" + event.kind + "|" + event.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a,b) => b.year - a.year || a.name.localeCompare(b.name))
       .slice(0, 8);
   }
 
@@ -191,6 +202,8 @@
     const matching = records.filter(record => dateState(record.tags, selected.year) === "compatible");
     const unresolved = records.filter(record => dateState(record.tags, selected.year) === "unresolved").length;
     const sourced = matching.filter(record => hasSource(record.tags)).length;
+    featureSummary.textContent = matching.length + " dated feature" +
+      (matching.length === 1 ? "" : "s");
     stats.count.textContent = String(records.length);
     stats.dated.textContent = String(dated);
     stats.compatible.textContent = String(matching.length);
@@ -233,6 +246,15 @@
       ": " + matching.length + " date-compatible feature" + (matching.length === 1 ? "" : "s") +
       " from " + records.length + " returned records" + (payload.capped ? " (sample limit reached)" : "") + ".";
     teaser.textContent = matching.length + " matches · " + yearLabel(selected.year);
+    // Send a few date-only suggestions to the compact time strip. They are
+    // explicitly identified as a limited OHM sample, not a full chronology.
+    window.dispatchEvent(new CustomEvent("time-layer-pins", {
+      detail: {
+        key: selected.placeId || selected.view,
+        year: selected.year,
+        pins: events.filter(event => event.year < selected.year)
+      }
+    }));
     results.hidden = false;
   }
 
