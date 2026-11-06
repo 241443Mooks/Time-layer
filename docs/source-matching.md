@@ -57,3 +57,14 @@ Among eligible candidates:
 - Add spatial-and-year catalogue lookup for **NLS specific sheet metadata**, or another trusted heritage-map catalogue that explicitly supports year and bounding box. Only return actual item links after verification; do not use arbitrary viewer URLs as fallback.
 - Consider the no-key Library of Congress search, followed by Europeana with an explicit project key, both subject to media/item-level rights.
 - Develop a deduplicated, typed record/relation graph: locations, maps, artefacts, documents, people and events. First 1–2-day experiment should produce a few **high-quality traceable** cross-source discoveries, not a huge volume of text.
+
+## 6 November 2026 — Precision-aware periods, not invented point dates
+
+The Wikimedia media adapter now accepts unqualified **century expressions** and bounded year spans. Parsing examples: `17th century` → `[1601,1700]`, `18th century` → `[1701,1800]`, `between 1600 and 1699` → `[1600,1699]`, and `1720–1740` → `[1720,1740]`. The original expression/precision accompanies the candidate, with the interval and uncertainty shown in the UI.
+
+**Eligibility:** century or broad-range imagery can be presented *inside* the supported period only, with a lower ranking than precisely dated imagery; it does not spill 20 years beyond the boundary. A selected date of 1800 is **not** compatible with the 17th century. Image creation date is still not necessarily depiction date. Unbounded dates like `before 1800`, century qualifiers like `early` without a defined convention, and unknown dates are **not** assigned an arbitrary anchor.
+
+The first in-site time strip retains the chosen Wikidata place while moving ±25/100 years. A separate explicit **Find dated changes nearby** action uses bounded 25-year OHM samples to propose up to four named, deduplicated source dates. This is a navigation convenience **not** a comprehensive place chronology or a claim that those dated objects existed throughout the period. The longer OHM results and methodological caveats are collapsed, but accessible.
+
+**Scope limitation:** OpenHistoricalMap's current upstream query still restricts year-matched features to records with numeric start/end tags. Broad-century OHM records may remain absent from the sampled query, even though Commons media now understands them. A future typed chronology must collect and reconcile approximate OHM dates through a separate source-aware process before suggesting them as events.
+
