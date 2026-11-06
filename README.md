@@ -131,6 +131,8 @@ From user Android testing of Tower of London at 1815 CE: an expanded evidence pa
 - **Important scope:** this broad-date improvement currently applies to Commons historical imagery. The main OpenHistoricalMap historical reconstruction and year-compatible list **still require sufficiently precise start/end tags**, and an OHM 25-year query can omit features with only broad-century tags. We must not claim to have solved that source limitation.
 - **Checks**: focused tests passed for century/range boundary eligibility, a Tower-of-London-style nearby event sample and in-place year hopping, and reuse of the OHM cache without a duplicate lookup. Live page selectors confirmed the time strip and Warren presence; actual tactile device testing and visual QA remain with the user.
 
+The [adaptive place-history research design](docs/adaptive-place-history.md) now describes how a house, a protected landmark and a major institution should trigger different source adapters and distinct earliest-evidence claims. This is a researched next phase, **not** implemented as an automatic history engine.
+
 The [source-matching rules](docs/source-matching.md) and [Discovery Warren direction](docs/discovery-warren.md) track the wider opportunity: a typed place chronology with dated events, people, archaeological objects and original archive maps instead of an endless scroll of unrelated evidence.
 
 ### Intentional limits
