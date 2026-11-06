@@ -74,3 +74,12 @@ The user reported two problems in a real Android screenshot: full place/year con
 
 **Next vertical slice:** make the existing pictured Castlefield → Mamucium lead lead into one official archaeological source and, where rights permit, a dated museum object image. Then test a licensed historic-map scan with the map's actual date displayed independently from the user's selected year. Prefer verified relationship *quality* to raw source counts.
 
+## 6 November 2026 — Time travelling inside a place
+
+A new **Travel through this place** strip makes ±25- and ±100-year jumps without changing place or leaving the app. Its explicit **Find dated changes nearby** button uses the existing OHM Worker/evidence cache to surface up to four deduplicated named recorded changes. It stays responsive and doesn't expand the large evidence panel; these are sampled records, not a full chronology.
+
+The **Warren appears before the map** in the page order, with the map still accessible as a folded-away option. Clicking **Explore this place** leads to the discovery section. Wikipedia prose previews are shorter. Detailed evidence data quality, named record cards and the complete dated event list are available inside nested disclosures; opening an individual feature now shows source and date detail in-page before the external OHM link.
+
+Uncertain Commons creation dates are retained as **century or interval expressions**, ranked below precise year records. 17th century means 1601–1700, not 1800; no image can be assigned to 1800 because it was merely labelled 17th century. Broad-period imagery never silently implies the selected year or actual scene depicted. This is a first implementation for Commons imagery, not a completed multi-archive vague-date engine.
+
+Next priority is **a substantive historical chronology** that pulls verified time-bound events from more trustworthy and relevant sources than the bounded OHM sample, and makes each stop an in-site doorway into a place, object or original document.
