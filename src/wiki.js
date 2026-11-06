@@ -232,11 +232,13 @@ function imageCreationDate(value) {
         (number % 10 === 1 ? "st" : number % 10 === 2 ? "nd" : number % 10 === 3 ? "rd" : "th")) + " century" };
     }
   }
-  const between = clean.match(/^(?:between|from)\s+(\d{3,4})\s+(?:and|to)\s+(\d{3,4})\b/i);
+  const between = clean.match(/^(?:between|from)\s+(\d{3,4})\s+(?:and|to)\s+(\d{3,4})\b/i) ||
+    clean.match(/^(\d{3,4})\s*[-–—]\s*(\d{3,4})(?!\d)/);
   if (between) {
     const start = Number(between[1]), end = Number(between[2]);
-    return end >= start && end - start <= 20 ?
-      { start, end, precision: "range" } : null;
+    if (end < start || end - start > 100 || start < 1 || end > 2026) return null;
+    return { start, end,
+      precision: end - start > 20 ? "broad-range" : "range" };
   }
   const approximate = /^(?:circa|c\.|ca\.|about|around)\s*/i.test(clean);
   const stripped = clean.replace(/^(?:circa|c\.|ca\.|about|around)\s*/i, "");
@@ -316,9 +318,9 @@ async function attachVerifiedMedia(place, summary, featured, near) {
 function imageMatchesYear(media, year) {
   const date = media?.created;
   if (!date || !Number.isInteger(date.start) || !Number.isInteger(date.end)) return false;
-  if (date.precision === "century") {
-    // Century-scale records are discoverable anywhere within their own
-    // century, but have no invented event year or +/-20y spillover.
+  if (date.precision === "century" || date.precision === "broad-range") {
+    // Uncertain long periods are discoverable only within their stated
+    // range; never assign them an invented single year or spillover.
     return year >= date.start && year <= date.end;
   }
   const gap = year < date.start ? date.start - year : year > date.end ? year - date.end : 0;
@@ -330,7 +332,8 @@ function mediaScore(media, year, nameMatch) {
   const gap = year < date.start ? date.start - year : year > date.end ? year - date.end : 0;
   return 100 - 4 * gap + (nameMatch ? 15 : 0) +
     (date.precision === "year" ? 5 : 0) -
-    (date.precision === "century" ? 45 : 0);
+    (date.precision === "century" ? 45 :
+      date.precision === "broad-range" ? 35 : 0);
 }
 
 export async function periodImages(request) {
