@@ -48,8 +48,8 @@
     const date = media?.created;
     if (!date || !Number.isInteger(date.start) || !Number.isInteger(date.end) ||
         date.end < date.start) return Infinity;
-    if (date.precision === "century") {
-      // A broad record belongs to its century; don't move it to 1700/1800.
+    if (date.precision === "century" || date.precision === "broad-range") {
+      // Broad dating is an interval, never a fabricated year marker.
       return activeYear >= date.start && activeYear <= date.end ? 0 : Infinity;
     }
     if (date.end - date.start > 20) return Infinity;
@@ -67,6 +67,10 @@
       return "Created sometime in the " + d.label + " (" +
         d.start + "–" + d.end + " CE) · precise year unknown";
     }
+    if (d.precision === "broad-range" || d.precision === "range") {
+      return "Created between " + d.start + " and " + d.end +
+        " CE · precise year unknown";
+    }
     const period = d.start === d.end ? String(d.start) : d.start + "–" + d.end;
     const relative = dateGap(media);
     const direction = activeYear < d.start ? "later" : activeYear > d.end ? "earlier" : "";
@@ -77,9 +81,11 @@
   function sortRelevant(candidates) {
     return candidates.filter(candidate => matchesChosenYear(candidate.media))
       .sort((a, b) => ((b.priority || 0) - dateGap(b.media) * 5 -
-        (b.media.created.precision === "century" ? 45 : 0)) -
+        (b.media.created.precision === "century" ? 45 :
+          b.media.created.precision === "broad-range" ? 35 : 0)) -
         ((a.priority || 0) - dateGap(a.media) * 5 -
-        (a.media.created.precision === "century" ? 45 : 0))).slice(0, 3);
+        (a.media.created.precision === "century" ? 45 :
+          a.media.created.precision === "broad-range" ? 35 : 0))).slice(0, 3);
   }
 
 
