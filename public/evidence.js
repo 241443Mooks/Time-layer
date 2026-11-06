@@ -264,8 +264,8 @@
     results.hidden = false;
   }
 
-  async function load(force = false) {
-    if (!panel.open) return;
+  async function load(force = false, forPins = false) {
+    if (!panel.open && !forPins) return;
     const view = selected.view;
     const year = selected.year;
     const key = cacheKey(view, year, selected.placeId);
@@ -303,7 +303,8 @@
           (view === "world" && payload.placeId !== selected.placeId)) {
         throw new Error((payload && payload.error) || "The evidence API returned an unexpected response.");
       }
-      if (thisRequest !== requestId) return;
+      if (thisRequest !== requestId ||
+          cacheKey(selected.view, selected.year, selected.placeId) !== key) return;
       cached.set(key, payload);
       // Bound memory use while exploring lots of historical periods.
       if (cached.size > 12) cached.delete(cached.keys().next().value);
@@ -314,6 +315,9 @@
       status.textContent = "Could not inspect the records: " + error.message + " The historical and modern maps still work.";
       teaser.textContent = "Evidence temporarily unavailable";
       results.hidden = true;
+      window.dispatchEvent(new CustomEvent("time-layer-pins-error", {
+        detail: { key: selected.placeId || selected.view, year: selected.year }
+      }));
     } finally {
       if (thisRequest === requestId) {
         refresh.disabled = false;
@@ -326,13 +330,27 @@
   panel.addEventListener("toggle", () => {
     if (panel.open) load();
   });
+  window.addEventListener("time-layer-request-pins", event => {
+    const detail = event.detail || {};
+    if (detail.key !== (selected.placeId || selected.view) ||
+        detail.year !== selected.year) return;
+    // The request comes from the compact time strip. It reuses the same
+    // evidence cache and does not require expanding the large record panel.
+    load(false, true);
+  });
   refresh.addEventListener("click", () => load(true));
 
   window.addEventListener("time-layer-selection", event => {
     const detail = event.detail;
     if (!detail || typeof detail.view !== "string" || !Number.isInteger(detail.year)) return;
-    const previousView = selected.view;
     selected = detail;
+    if (pending && pendingKey !== cacheKey(selected.view, selected.year, selected.placeId)) {
+      pending.abort();
+      requestId++;
+      pending = null;
+      pendingKey = null;
+      refresh.disabled = false;
+    }
     if (panel.open) {
       // Reuse the same 25-year window without another API call. Request
       // another narrow window only when the user travels outside it.
