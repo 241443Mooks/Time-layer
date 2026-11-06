@@ -103,6 +103,18 @@
       </div>
     </details>
 
+    <section class="time-hops" aria-label="Travel through this place's history">
+      <div class="time-hops-head">
+        <div><span class="eyebrow dark">TRAVEL THROUGH THIS PLACE</span><strong id="hops-place">Manchester</strong></div>
+        <span id="hops-year" class="time-hops-current">1900 CE</span>
+      </div>
+      <div id="time-hop-buttons" class="time-hop-buttons" role="group" aria-label="Jump to nearby years"></div>
+      <div id="time-hop-events" class="time-hop-events" hidden>
+        <span>Recorded changes nearby · limited sample</span>
+        <div id="time-hop-event-buttons" class="time-hop-event-buttons"></div>
+      </div>
+    </section>
+
     <section class="map-section" aria-label="Compare maps">
       <div class="map-head">
         <div>
@@ -218,11 +230,13 @@
         </summary>
         <div class="evidence-body">
           <div class="evidence-intro">
-            <p>Explore what OpenHistoricalMap contributors have recorded near this viewpoint. This does <strong>not</strong> measure how complete the historical map is.</p>
+            <p>Nearby historical records, not proof of what existed. Jump between recorded dates above.</p>
             <button type="button" class="evidence-refresh" id="evidence-refresh">Check records again</button>
           </div>
           <p class="evidence-status" id="evidence-status" role="status" aria-live="polite">Open this panel to check nearby records.</p>
           <div id="evidence-results" hidden>
+            <details class="evidence-method">
+              <summary>Data quality and limitations</summary>
             <dl class="evidence-stats">
               <div><dt>Records checked (sample)</dt><dd id="evidence-count">—</dd></div>
               <div><dt>With date tags</dt><dd id="evidence-dated">—</dd></div>
@@ -230,17 +244,16 @@
               <div><dt>Sources on matches</dt><dd id="evidence-sourced">—</dd></div>
             </dl>
             <p id="evidence-coverage" class="evidence-caveat"></p>
+            </details>
             <div class="evidence-columns">
-              <section aria-labelledby="evidence-features-heading">
-                <h3 id="evidence-features-heading">Features matching your year</h3>
-                <p class="helper">Newest recorded start first. Only features with date bounds compatible with your chosen year; these are leads, not proof of existence.</p>
+              <details class="evidence-list-details">
+                <summary id="evidence-features-heading">Dated features <span id="evidence-feature-summary">Browse the records</span></summary>
                 <ul id="evidence-features" class="evidence-features"></ul>
-              </section>
-              <section aria-labelledby="evidence-events-heading">
-                <h3 id="evidence-events-heading">Earlier recorded changes</h3>
-                <p class="helper">Recorded starts and ends up to your selected year, not future events. Jump back to investigate.</p>
+              </details>
+              <details class="evidence-list-details">
+                <summary id="evidence-events-heading">Earlier recorded changes <span>Browse the dates</span></summary>
                 <ol id="evidence-events" class="evidence-events"></ol>
-              </section>
+              </details>
             </div>
           </div>
           <details id="heritage-panel" class="heritage-panel" hidden>
@@ -255,7 +268,10 @@
               <p class="heritage-attribution">Data: © Historic England 2026. Contains Ordnance Survey data © Crown copyright and database right 2026. Reused under the Open Government Licence.</p>
             </div>
           </details>
-          <p class="evidence-footnote">About a kilometre around the selected viewpoint—not the part of a map you may have panned to. Results are capped, are not a random sample, and may omit earlier or undated features. A zero-match year means no matching evidence in this query, not proof of an empty landscape. An empty result, uncertain date or missing source is <strong>not evidence that nothing existed</strong>.</p>
+          <details class="evidence-footnote-notes">
+            <summary>How reliable is this evidence?</summary>
+            <p>Records cover a bounded area around the selected place, not wherever you've panned. Searches are capped and can omit earlier or undated features. Matching dates are clues, not proof. Missing records do not mean an empty landscape.</p>
+          </details>
         </div>
       </details>
     </section>
