@@ -10,6 +10,7 @@
   <script src="./evidence.js" defer></script>
   <script src="./heritage.js" defer></script>
   <script src="./discovery.js" defer></script>
+  <script src="./historic-maps.js" defer></script>
   <script src="./shared-map.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
@@ -145,10 +146,13 @@
           <div class="map-card-foot"><span>© OpenStreetMap contributors · ODbL</span><a id="modern-link" href="https://www.openstreetmap.org/#map=14/53.4808/-2.2426" target="_blank" rel="noopener noreferrer" tabindex="-1">Open full map ↗</a></div>
         </article>
       </div>
-      <details class="archive-peek">
-        <summary><span class="archive-peek-icon" aria-hidden="true">✦</span> Want an actual old map?</summary>
-        <p>Our historical view is a reconstruction. Digitised maps are different: they show the cartography people actually drew. Explore <a href="https://maps.nls.uk/geo/explore/" target="_blank" rel="noopener noreferrer">NLS georeferenced maps ↗</a> (strong Great Britain coverage), or <a href="https://www.davidrumsey.com/view" target="_blank" rel="noopener noreferrer">David Rumsey’s historical map collection ↗</a> (international). Dates, rights and geographical availability vary; neither archive is yet embedded in this viewer.</p>
-      </details>
+      <section id="historical-map-match" class="historical-map-match" aria-label="Relevant original historical map" hidden>
+        <p class="eyebrow dark">ORIGINAL MAP · VERIFIED ARCHIVE RECORD</p>
+        <h3 id="historical-map-title"></h3>
+        <p id="historical-map-context"></p>
+        <a id="historical-map-link" target="_blank" rel="noopener noreferrer">View the actual map sheet ↗</a>
+        <small id="historical-map-credit"></small>
+      </section>
       <p class="map-note" id="map-status" role="status">Flip between past and present. Turn on “Keep views aligned” to try one shared map camera; the original embed comparison remains available.</p>
         </div>
       </details>
