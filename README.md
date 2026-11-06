@@ -120,6 +120,19 @@ From real Android feedback: a **2018 photo of London Bridge station** dominated 
 
 The 20-year image and 15-year map cutoffs are transparent, conservative **pilot tolerances**, not historical standards or claims of accuracy. They can be tightened following review. See [source-matching and ranking rules](docs/source-matching.md) for the source registry, gates and next adapters (NLS sheet metadata, Library of Congress, Europeana, archaeology and museum objects). The Commons and map-link logic passed focused date, selection and navigation tests; Android visual verification is still needed.
 
+### Version 0.8 — Stay in a place, move through its history (6 November 2026)
+
+From user Android testing of Tower of London at 1815 CE: an expanded evidence panel became a long list of low-value details, including a building named `yes` and repeated changes. The map also came before the more compelling Warren, creating unnecessary scroll.
+
+- **In-place time travel**: a compact, horizontal **Travel through this place** strip shows ±25 and ±100-year hops while preserving the selected place, map centre and shared URL. A user-initiated **Find dated changes nearby** action reuses the same bounded OHM evidence query and cache to surface up to four deduplicated, *named* recorded starts/ends as local year-jump buttons. It does not require opening the long evidence panel; searches are not exhaustive.
+- **Discovery leads**: the Warren is now **before** the optional map viewport; **Explore this place** scrolls to discoveries. A small **View the map** link remains. Wikimedia context is condensed to a short preview while full text stays behind Read more.
+- **Evidence without walls of text**: statistics, query limitations, dated features and recorded changes are separate collapsed disclosures. Named feature cards expand inside Time-Layer before offering outbound OHM or original-source links. Generic `building=yes` labels are no longer mistaken for feature names, and identical named date events are deduplicated.
+- **Vague dates as ranges**: Commons `DateTimeOriginal` now accepts unqualified centuries (e.g. **17th century = 1601–1700 CE**, **18th century = 1701–1800 CE**) and explicit bounded year spans of up to 100 years. The image is relevant only *within* that broad interval, receives a lower ranking than year-specific records, and is labelled with its uncertainty instead of a fabricated year. Broad intervals are **not** coerced to the end of the century. Dates such as `before 1800` with no lower bound, or `early/mid/late 17th century` qualifiers without a supported mapping convention, remain unresolved; no unsupported midpoint is inserted.
+- **Important scope:** this broad-date improvement currently applies to Commons historical imagery. The main OpenHistoricalMap historical reconstruction and year-compatible list **still require sufficiently precise start/end tags**, and an OHM 25-year query can omit features with only broad-century tags. We must not claim to have solved that source limitation.
+- **Checks**: focused tests passed for century/range boundary eligibility, a Tower-of-London-style nearby event sample and in-place year hopping, and reuse of the OHM cache without a duplicate lookup. Live page selectors confirmed the time strip and Warren presence; actual tactile device testing and visual QA remain with the user.
+
+The [source-matching rules](docs/source-matching.md) and [Discovery Warren direction](docs/discovery-warren.md) track the wider opportunity: a typed place chronology with dated events, people, archaeological objects and original archive maps instead of an endless scroll of unrelated evidence.
+
 ### Intentional limits
 
 - **Panning/zooming the two embeds is independent.** Choosing a viewpoint recentres both, but dragging one does not automatically drag the other. This is a first test of the idea, not yet a fully synchronised map engine.
