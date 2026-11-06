@@ -301,3 +301,15 @@
  .discovery-lead{font-size:.89rem}
  .featured-trail-media img{max-height:190px}
 }
+
+
+/* Source-level map leads replace broad archive-directory links. */
+.historical-map-match{margin:13px 0;padding:16px 18px;background:#f1f5ed;border:1px solid #d4e0d3;border-left:3px solid #aa865c;border-radius:6px}
+.historical-map-match[hidden]{display:none}
+.historical-map-match .eyebrow{margin:0 0 7px;color:#8a633f}
+.historical-map-match h3{font:normal 1.32rem Georgia,serif;color:#244f3f;margin:0 0 8px}
+.historical-map-match>p:not(.eyebrow){color:#4d6857;font-size:.83rem;line-height:1.55;margin:0 0 8px}
+.historical-map-match a{display:inline-block;color:#206349;font-size:.83rem;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.historical-map-match small{display:block;color:#65796c;font-size:.72rem;line-height:1.45;margin:7px 0 0}
+.discovery-media figcaption strong{display:block;color:#254b3c;font-size:.76rem;font-weight:800;margin:0 0 5px}
+.featured-trail-media figcaption strong{display:block;color:#345a46;font-size:.68rem;width:100%}
