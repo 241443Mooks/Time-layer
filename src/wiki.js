@@ -286,6 +286,87 @@ async function attachVerifiedMedia(place, summary, featured, near) {
   }
 }
 
+// Second, bounded source adapter: Commons file search, not a generic web
+// image search. Only items with an independently readable creation date, open
+// licence and location-bearing title pass to the visitor's year.
+function imageMatchesYear(media, year) {
+  const date = media?.created;
+  if (!date || !Number.isInteger(date.start) || !Number.isInteger(date.end)) return false;
+  const gap = year < date.start ? date.start - year : year > date.end ? year - date.end : 0;
+  return gap <= 20; // Date-near, not "made in the chosen year".
+}
+
+function mediaScore(media, year, nameMatch) {
+  const date = media.created;
+  const gap = year < date.start ? date.start - year : year > date.end ? year - date.end : 0;
+  return 100 - 4 * gap + (nameMatch ? 15 : 0) +
+    (date.precision === "year" ? 5 : 0);
+}
+
+export async function periodImages(request) {
+  if (request.method !== "GET") return json({ error: "Only GET is supported." }, 405);
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  const rawYear = url.searchParams.get("year");
+  if (!QID.test(id || "") || !/^-?\d{1,4}$/.test(rawYear || "")) {
+    return json({ error: "A Wikidata place and valid historical year are required." }, 400);
+  }
+  const year = Number(rawYear);
+  if (!Number.isSafeInteger(year) || year < -3999 || year > 2026) {
+    return json({ error: "Year is outside the supported historical range." }, 400);
+  }
+  // The initial Commons adapter handles verified years in modern chronology.
+  if (year < 1000) return json({ id, year, images: [], source: "Wikimedia Commons" }, 200, 3600);
+  try {
+    const place = await resolvePlace(id);
+    if (!place) return json({ error: "Place has no mapped Wikidata location." }, 404);
+    // "Old London Bridge" is a disambiguated source term: the modern bridge
+    // and railway station are different Wikidata identities.
+    const phrase = id === "Q56739974" ? '"Old London Bridge" painting' :
+      '"' + place.label.replace(/["\\]/g, "").slice(0, 75) + '" historic';
+    const response = await fetchJson(urlFor(COMMONS, {
+      action: "query", generator: "search", gsrsearch: phrase,
+      gsrnamespace: 6, gsrlimit: 18,
+      prop: "imageinfo", iiprop: "url|extmetadata",
+      iiurlwidth: 480, format: "json"
+    }));
+    const pages = Object.values(response.query?.pages || {});
+    const words = place.label.toLowerCase().replace(/[^a-z0-9 ]/g, " ")
+      .split(/\s+/).filter(word => word.length > 2);
+    const ranked = [];
+    for (const page of pages) {
+      const title = typeof page.title === "string" ? page.title : "";
+      if (!/^File:/i.test(title) || !/\.(?:jpe?g|png|webp)$/i.test(title)) continue;
+      const lower = title.toLowerCase().replace(/[_-]/g, " ");
+      if (!words.every(word => lower.includes(word))) continue;
+      const info = imageMetadata(page);
+      if (!info || !imageMatchesYear(info, year)) continue;
+      const thumb = page.imageinfo?.[0]?.thumburl;
+      if (!wikipediaImageUrl(thumb)) continue;
+      const score = mediaScore(info, year, true);
+      ranked.push({
+        title: title.replace(/^File:/i, "").replace(/\.[^.]+$/, "").replace(/_/g, " ").slice(0, 150),
+        score,
+        media: {
+          ...info,
+          thumbnail: thumb,
+          alt: "Historic image candidate titled " + title.slice(5, 100),
+          caveat: "Dated by the artwork's documented creation date, not a verified date of the scene depicted."
+        },
+        source: "Wikimedia Commons · titled historical image"
+      });
+    }
+    ranked.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
+    return json({
+      id, year, images: ranked.slice(0, 3),
+      source: "Wikimedia Commons",
+      caveat: "A place-title match and nearby artwork date are research leads, not proven depiction dates."
+    }, 200, 1200);
+  } catch (_error) {
+    return json({ id, year, images: [], source: "Wikimedia Commons", unavailable: true }, 200, 180);
+  }
+}
+
 export async function placeDetail(request) {
   if (request.method !== "GET") return json({ error: "Only GET is supported." }, 405);
   const id = new URL(request.url).searchParams.get("id");
